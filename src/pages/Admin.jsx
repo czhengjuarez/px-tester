@@ -13,9 +13,12 @@ export default function Admin() {
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('sites')
   const [pendingSites, setPendingSites] = useState([])
+  const [allSites, setAllSites] = useState([])
   const [users, setUsers] = useState([])
   const [invites, setInvites] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
+  const [siteSearchQuery, setSiteSearchQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
   const [inviteEmail, setInviteEmail] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -25,6 +28,13 @@ export default function Admin() {
   useEffect(() => {
     if (activeTab === 'sites') {
       fetchPendingSites()
+    } else if (activeTab === 'manage') {
+      // Debounce search - wait 500ms after user stops typing
+      const timeoutId = setTimeout(() => {
+        fetchAllSites()
+      }, 500)
+      
+      return () => clearTimeout(timeoutId)
     } else if (activeTab === 'users') {
       // Debounce search - wait 500ms after user stops typing
       const timeoutId = setTimeout(() => {
@@ -35,7 +45,7 @@ export default function Admin() {
     } else if (activeTab === 'invites') {
       fetchInvites()
     }
-  }, [activeTab, searchQuery])
+  }, [activeTab, searchQuery, siteSearchQuery, statusFilter])
 
   const fetchPendingSites = async () => {
     try {
@@ -95,6 +105,78 @@ export default function Admin() {
       
       // Remove from pending list
       setPendingSites(pendingSites.filter(site => site.id !== siteId))
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setProcessingId(null)
+    }
+  }
+
+  const fetchAllSites = async () => {
+    try {
+      setLoading(true)
+      const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
+      const params = new URLSearchParams()
+      if (siteSearchQuery) params.append('search', siteSearchQuery)
+      if (statusFilter) params.append('status', statusFilter)
+      
+      const url = `${API_URL}/admin/sites${params.toString() ? '?' + params.toString() : ''}`
+      const response = await fetch(url, {
+        credentials: 'include'
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch sites')
+      }
+      
+      const data = await response.json()
+      setAllSites(data.sites || [])
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleToggleFeatured = async (siteId) => {
+    try {
+      setProcessingId(siteId)
+      const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
+      const response = await fetch(`${API_URL}/admin/sites/${siteId}/toggle-featured`, {
+        method: 'POST',
+        credentials: 'include'
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to toggle featured status')
+      }
+      
+      // Refresh sites list
+      fetchAllSites()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setProcessingId(null)
+    }
+  }
+
+  const handleUpdateStatus = async (siteId, status) => {
+    try {
+      setProcessingId(siteId)
+      const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
+      const response = await fetch(`${API_URL}/admin/sites/${siteId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ status })
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to update site status')
+      }
+      
+      // Refresh sites list
+      fetchAllSites()
     } catch (err) {
       setError(err.message)
     } finally {
@@ -303,6 +385,18 @@ export default function Admin() {
           >
             Pending Sites
           </button>
+          {user.role === 'super_admin' && (
+            <button
+              onClick={() => setActiveTab('manage')}
+              className={`px-4 py-2 font-medium transition-colors border-b-2 ${
+                activeTab === 'manage'
+                  ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+              }`}
+            >
+              Manage Sites
+            </button>
+          )}
           <button
             onClick={() => setActiveTab('users')}
             className={`px-4 py-2 font-medium transition-colors border-b-2 ${
@@ -435,6 +529,129 @@ export default function Admin() {
             ))}
           </div>
         )}
+          </>
+        )}
+
+        {/* Manage Sites Tab */}
+        {activeTab === 'manage' && (
+          <>
+            {/* Search and Filter */}
+            <div className="mb-6 flex gap-4">
+              <div className="relative flex-1">
+                <MagnifyingGlass size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search sites by name, URL, or description..."
+                  value={siteSearchQuery}
+                  onChange={(e) => setSiteSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+
+            {/* Sites List */}
+            {allSites.length === 0 ? (
+              <Surface className="p-12 text-center">
+                <Text color="secondary" size="lg">
+                  No sites found
+                </Text>
+              </Surface>
+            ) : (
+              <div className="space-y-4">
+                {allSites.map((site) => (
+                  <Surface key={site.id} className="p-6">
+                    <div className="flex items-start justify-between gap-6">
+                      {/* Site Info */}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Text size="lg" weight="semibold">{site.name}</Text>
+                          <Badge 
+                            variant={site.status === 'approved' ? 'success' : site.status === 'pending' ? 'warning' : 'danger'}
+                            size="sm"
+                          >
+                            {site.status}
+                          </Badge>
+                          {site.is_featured === 1 && (
+                            <Badge variant="info" size="sm">
+                              ⭐ Featured
+                            </Badge>
+                          )}
+                        </div>
+                        <a 
+                          href={site.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-blue-600 dark:text-blue-400 hover:underline mb-2 block"
+                        >
+                          {site.url}
+                        </a>
+                        <Text color="secondary" size="sm" className="mb-2">
+                          {site.short_description || site.description?.substring(0, 100)}
+                        </Text>
+                        {site.submitter_name && (
+                          <Text color="secondary" size="sm">
+                            Submitted by {site.submitter_name} ({site.submitter_email})
+                          </Text>
+                        )}
+                        <Text color="secondary" size="sm">
+                          Created {new Date(site.created_at).toLocaleDateString()}
+                        </Text>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex flex-col gap-2">
+                        <Button
+                          variant={site.is_featured ? 'warning' : 'secondary'}
+                          size="sm"
+                          onClick={() => handleToggleFeatured(site.id)}
+                          disabled={processingId === site.id}
+                        >
+                          {site.is_featured ? '⭐ Unfeature' : '⭐ Feature'}
+                        </Button>
+                        
+                        {site.status !== 'approved' && (
+                          <Button
+                            variant="success"
+                            size="sm"
+                            onClick={() => handleUpdateStatus(site.id, 'approved')}
+                            disabled={processingId === site.id}
+                          >
+                            Approve
+                          </Button>
+                        )}
+                        
+                        {site.status !== 'rejected' && (
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={() => handleUpdateStatus(site.id, 'rejected')}
+                            disabled={processingId === site.id}
+                          >
+                            Reject
+                          </Button>
+                        )}
+                        
+                        <a href={`/site/${site.id}`} target="_blank" rel="noopener noreferrer">
+                          <Button variant="outlined" size="sm">
+                            View Details
+                          </Button>
+                        </a>
+                      </div>
+                    </div>
+                  </Surface>
+                ))}
+              </div>
+            )}
           </>
         )}
 

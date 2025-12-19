@@ -21,7 +21,10 @@ import {
   handleDeleteUser,
   handleCreateInvite,
   handleGetInvites,
-  handleRevokeInvite
+  handleRevokeInvite,
+  handleGetAllSites,
+  handleToggleFeatured,
+  handleUpdateSiteStatus
 } from './admin-routes.js';
 import { handleImageUpload } from './upload-routes.js';
 import { handleGetScreenshot } from './screenshot-routes.js';
@@ -156,20 +159,27 @@ export default {
         return handleRevokeInvite(env, user, inviteId, corsHeaders);
       }
 
-      // Image upload
+      // Manage Sites
+      if (url.pathname === '/api/admin/sites' && request.method === 'GET') {
+        const searchQuery = url.searchParams.get('search') || '';
+        const status = url.searchParams.get('status') || '';
+        return handleGetAllSites(env, user, corsHeaders, searchQuery, status);
+      }
+
+      if (url.pathname.match(/^\/api\/admin\/sites\/[^/]+\/toggle-featured$/) && request.method === 'POST') {
+        const siteId = url.pathname.split('/')[4];
+        return handleToggleFeatured(env, user, siteId, corsHeaders);
+      }
+
+      if (url.pathname.match(/^\/api\/admin\/sites\/[^/]+\/status$/) && request.method === 'PUT') {
+        const siteId = url.pathname.split('/')[4];
+        const body = await request.json();
+        return handleUpdateSiteStatus(env, user, siteId, body.status, corsHeaders);
+      }
+
+      // Image upload (requires authentication)
       if (url.pathname === '/api/upload/image' && request.method === 'POST') {
         return handleImageUpload(request, env, user, corsHeaders);
-      }
-
-      // AI Search
-      if (url.pathname === '/api/search' && request.method === 'GET') {
-        return handleAISearch(request, env, corsHeaders);
-      }
-
-      // Similar sites
-      if (url.pathname.match(/^\/api\/sites\/[^/]+\/similar$/) && request.method === 'GET') {
-        const id = url.pathname.split('/')[3];
-        return handleGetSimilarSites(id, env, corsHeaders);
       }
 
       // Screenshot serving (public access)

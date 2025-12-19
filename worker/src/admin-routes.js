@@ -127,6 +127,98 @@ export async function handleDeleteUser(env, user, userId, corsHeaders) {
   });
 }
 
+// Manage Sites
+export async function handleGetAllSites(env, user, corsHeaders, searchQuery = '', status = '') {
+  if (!user || (user.role !== 'admin' && user.role !== 'super_admin')) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  let query = `
+    SELECT s.*, u.name as submitter_name, u.email as submitter_email 
+    FROM sites s 
+    LEFT JOIN users u ON s.user_id = u.id 
+    WHERE 1=1
+  `;
+  let params = [];
+  
+  if (searchQuery) {
+    query += ' AND (s.name LIKE ? OR s.url LIKE ? OR s.description LIKE ?)';
+    params.push(`%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`);
+  }
+  
+  if (status) {
+    query += ' AND s.status = ?';
+    params.push(status);
+  }
+  
+  query += ' ORDER BY s.created_at DESC';
+  
+  const { results } = await env.DB.prepare(query).bind(...params).all();
+
+  return new Response(JSON.stringify({ sites: results }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+  });
+}
+
+export async function handleToggleFeatured(env, user, siteId, corsHeaders) {
+  if (!user || user.role !== 'super_admin') {
+    return new Response(JSON.stringify({ error: 'Only super admins can feature sites' }), {
+      status: 403,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  // Get current featured status
+  const { results } = await env.DB.prepare(
+    'SELECT is_featured FROM sites WHERE id = ?'
+  ).bind(siteId).all();
+
+  if (!results || results.length === 0) {
+    return new Response(JSON.stringify({ error: 'Site not found' }), {
+      status: 404,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  const newFeaturedStatus = results[0].is_featured ? 0 : 1;
+
+  await env.DB.prepare(
+    'UPDATE sites SET is_featured = ?, updated_at = ? WHERE id = ?'
+  ).bind(newFeaturedStatus, Date.now(), siteId).run();
+
+  return new Response(JSON.stringify({ success: true, is_featured: newFeaturedStatus }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+  });
+}
+
+export async function handleUpdateSiteStatus(env, user, siteId, status, corsHeaders) {
+  if (!user || (user.role !== 'admin' && user.role !== 'super_admin')) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  const validStatuses = ['pending', 'approved', 'rejected'];
+  if (!validStatuses.includes(status)) {
+    return new Response(JSON.stringify({ error: 'Invalid status' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  await env.DB.prepare(
+    'UPDATE sites SET status = ?, updated_at = ? WHERE id = ?'
+  ).bind(status, Date.now(), siteId).run();
+
+  return new Response(JSON.stringify({ success: true }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+  });
+}
+
 // Invite system
 export async function handleCreateInvite(env, user, email, corsHeaders) {
   if (!user || user.role !== 'super_admin') {
