@@ -22,13 +22,14 @@ export default function Home() {
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
       const url = `${API_URL}/sites?featured=true&limit=3`
-      console.log('Fetching featured sites from:', url)
+      console.log('[Featured Sites] Fetching from:', url)
       const response = await fetch(url)
       const data = await response.json()
-      console.log('Featured sites response:', data)
+      console.log('[Featured Sites] Response:', data)
+      console.log('[Featured Sites] Count:', data.sites?.length || 0)
       setFeaturedSites(data.sites || [])
     } catch (error) {
-      console.error('Failed to fetch featured sites:', error)
+      console.error('[Featured Sites] Error:', error)
     }
   }
 
