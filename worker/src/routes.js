@@ -10,8 +10,20 @@ import { generateSiteEmbedding, searchSimilar, findSimilarSites } from './ai.js'
 import { captureScreenshot, getScreenshot } from './screenshots.js';
 
 // Auth routes
-export async function handleAuthGoogle(env, corsHeaders) {
-  const authUrl = getGoogleAuthUrl(env);
+export async function handleAuthGoogle(request, env, corsHeaders) {
+  // Get the origin domain from the Referer header to redirect back after OAuth
+  const referer = request.headers.get('Referer') || request.headers.get('Origin');
+  let originDomain = env.FRONTEND_URL; // default
+  
+  if (referer) {
+    const refererUrl = new URL(referer);
+    originDomain = `${refererUrl.protocol}//${refererUrl.host}`;
+  }
+  
+  // Encode origin domain in state parameter
+  const state = btoa(JSON.stringify({ origin: originDomain }));
+  const authUrl = getGoogleAuthUrl(env, state);
+  
   return new Response(JSON.stringify({ url: authUrl }), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' }
   });
@@ -21,12 +33,24 @@ export async function handleAuthCallback(request, env, corsHeaders) {
   const url = new URL(request.url);
   const code = url.searchParams.get('code');
   const error = url.searchParams.get('error');
+  const stateParam = url.searchParams.get('state');
+  
+  // Decode origin domain from state parameter
+  let originDomain = env.FRONTEND_URL; // default
+  if (stateParam) {
+    try {
+      const decoded = JSON.parse(atob(stateParam));
+      originDomain = decoded.origin || env.FRONTEND_URL;
+    } catch (e) {
+      console.error('Failed to decode state:', e);
+    }
+  }
   
   if (error || !code) {
     return new Response(null, {
       status: 302,
       headers: {
-        'Location': `${env.FRONTEND_URL}/?error=auth_failed`,
+        'Location': `${originDomain}/?error=auth_failed`,
         ...corsHeaders
       }
     });
@@ -45,11 +69,11 @@ export async function handleAuthCallback(request, env, corsHeaders) {
     // Create session
     const { token, expiresAt } = await createSession(env, user.id);
     
-    // Redirect with session cookie
+    // Redirect back to origin domain with session cookie
     return new Response(null, {
       status: 302,
       headers: {
-        'Location': `${env.FRONTEND_URL}/`,
+        'Location': `${originDomain}/`,
         'Set-Cookie': setSessionCookie(token, expiresAt),
         ...corsHeaders
       }

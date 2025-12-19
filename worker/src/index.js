@@ -60,7 +60,7 @@ export default {
 
       // Auth routes
       if (url.pathname === '/api/auth/google' && request.method === 'GET') {
-        return handleAuthGoogle(env, corsHeaders);
+        return handleAuthGoogle(request, env, corsHeaders);
       }
       
       if (url.pathname === '/api/auth/google/callback' && request.method === 'GET') {
