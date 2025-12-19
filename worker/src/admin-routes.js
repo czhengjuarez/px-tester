@@ -126,3 +126,72 @@ export async function handleDeleteUser(env, user, userId, corsHeaders) {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' }
   });
 }
+
+// Invite system
+export async function handleCreateInvite(env, user, email, corsHeaders) {
+  if (!user || user.role !== 'super_admin') {
+    return new Response(JSON.stringify({ error: 'Only super admins can create invites' }), {
+      status: 403,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  const inviteId = crypto.randomUUID();
+  const inviteCode = crypto.randomUUID().replace(/-/g, '').substring(0, 16).toUpperCase();
+  const now = Date.now();
+  const expiresAt = now + (7 * 24 * 60 * 60 * 1000); // 7 days
+
+  await env.DB.prepare(`
+    INSERT INTO invites (id, code, email, invited_by, invited_by_name, status, created_at, expires_at)
+    VALUES (?, ?, ?, ?, ?, 'pending', ?, ?)
+  `).bind(inviteId, inviteCode, email || null, user.id, user.name, now, expiresAt).run();
+
+  return new Response(JSON.stringify({ 
+    success: true,
+    invite: {
+      id: inviteId,
+      code: inviteCode,
+      email,
+      expiresAt
+    }
+  }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+  });
+}
+
+export async function handleGetInvites(env, user, corsHeaders) {
+  if (!user || user.role !== 'super_admin') {
+    return new Response(JSON.stringify({ error: 'Only super admins can view invites' }), {
+      status: 403,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  const { results } = await env.DB.prepare(`
+    SELECT i.*, u.name as used_by_name, u.email as used_by_email
+    FROM invites i
+    LEFT JOIN users u ON i.used_by = u.id
+    ORDER BY i.created_at DESC
+  `).all();
+
+  return new Response(JSON.stringify({ invites: results }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+  });
+}
+
+export async function handleRevokeInvite(env, user, inviteId, corsHeaders) {
+  if (!user || user.role !== 'super_admin') {
+    return new Response(JSON.stringify({ error: 'Only super admins can revoke invites' }), {
+      status: 403,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  await env.DB.prepare(`
+    UPDATE invites SET status = 'revoked' WHERE id = ?
+  `).bind(inviteId).run();
+
+  return new Response(JSON.stringify({ success: true }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+  });
+}

@@ -18,7 +18,10 @@ import {
   handleRejectSite,
   handleGetUsers,
   handleUpgradeUser,
-  handleDeleteUser
+  handleDeleteUser,
+  handleCreateInvite,
+  handleGetInvites,
+  handleRevokeInvite
 } from './admin-routes.js';
 import { handleImageUpload } from './upload-routes.js';
 import { handleGetScreenshot } from './screenshot-routes.js';
@@ -136,6 +139,21 @@ export default {
       if (url.pathname.match(/^\/api\/admin\/users\/[^/]+$/) && request.method === 'DELETE') {
         const userId = url.pathname.split('/')[4];
         return handleDeleteUser(env, user, userId, corsHeaders);
+      }
+
+      // Invite system
+      if (url.pathname === '/api/admin/invites' && request.method === 'GET') {
+        return handleGetInvites(env, user, corsHeaders);
+      }
+
+      if (url.pathname === '/api/admin/invites' && request.method === 'POST') {
+        const body = await request.json();
+        return handleCreateInvite(env, user, body.email, corsHeaders);
+      }
+
+      if (url.pathname.match(/^\/api\/admin\/invites\/[^/]+\/revoke$/) && request.method === 'POST') {
+        const inviteId = url.pathname.split('/')[4];
+        return handleRevokeInvite(env, user, inviteId, corsHeaders);
       }
 
       // Image upload
