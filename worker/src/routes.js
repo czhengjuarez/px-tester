@@ -57,29 +57,40 @@ export async function handleAuthCallback(request, env, corsHeaders) {
   }
   
   try {
+    console.log('[OAuth Callback] Starting OAuth flow');
+    console.log('[OAuth Callback] Origin domain:', originDomain);
+    
     // Exchange code for tokens
     const tokens = await exchangeCodeForTokens(env, code);
+    console.log('[OAuth Callback] Got tokens');
     
     // Get user info
     const googleUser = await getGoogleUserInfo(tokens.access_token);
+    console.log('[OAuth Callback] Got user info:', googleUser.email);
     
     // Find or create user
     const user = await findOrCreateUser(env, googleUser);
+    console.log('[OAuth Callback] User ID:', user.id, 'Role:', user.role);
     
     // Create session
     const { token, expiresAt } = await createSession(env, user.id);
+    console.log('[OAuth Callback] Created session, token:', token.substring(0, 10) + '...');
+    
+    const cookieHeader = setSessionCookie(token, expiresAt);
+    console.log('[OAuth Callback] Cookie header:', cookieHeader);
+    console.log('[OAuth Callback] Redirecting to:', `${originDomain}/`);
     
     // Redirect back to origin domain with session cookie
     return new Response(null, {
       status: 302,
       headers: {
         'Location': `${originDomain}/`,
-        'Set-Cookie': setSessionCookie(token, expiresAt),
+        'Set-Cookie': cookieHeader,
         ...corsHeaders
       }
     });
   } catch (error) {
-    console.error('OAuth error:', error);
+    console.error('[OAuth Callback] Error:', error);
     return new Response(null, {
       status: 302,
       headers: {
@@ -91,7 +102,12 @@ export async function handleAuthCallback(request, env, corsHeaders) {
 }
 
 export async function handleAuthMe(request, env, corsHeaders) {
+  const cookie = request.headers.get('Cookie');
+  console.log('[Auth Me] Cookie header:', cookie);
+  console.log('[Auth Me] Origin:', request.headers.get('Origin'));
+  
   const user = await authenticate(request, env);
+  console.log('[Auth Me] User:', user ? `${user.email} (${user.role})` : 'null');
   
   if (!user) {
     return new Response(JSON.stringify({ user: null }), {
