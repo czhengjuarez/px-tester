@@ -5,12 +5,13 @@ import { Plus } from '@phosphor-icons/react/dist/csr/Plus'
 import { useAuth } from '../../contexts/AuthContext'
 import UserMenu from '../auth/UserMenu'
 import LoginButton from '../auth/LoginButton'
+import ThemeToggle from '../common/ThemeToggle'
 
 export default function Header() {
   const { isAuthenticated } = useAuth()
 
   return (
-    <header className="sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
+    <header className="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -22,9 +23,6 @@ export default function Header() {
 
           {/* Navigation */}
           <nav className="flex items-center gap-6">
-            <Link to="/" className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
-              <span className="font-medium">Home</span>
-            </Link>
             <Link to="/browse" className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
               <span className="font-medium">Browse</span>
             </Link>
@@ -35,6 +33,7 @@ export default function Header() {
 
           {/* Actions */}
           <div className="flex items-center gap-3">
+            <ThemeToggle />
             <Link to="/search" className="sm:hidden inline-flex">
               <Button variant="outlined" size="sm">
                 <MagnifyingGlass size={20} />

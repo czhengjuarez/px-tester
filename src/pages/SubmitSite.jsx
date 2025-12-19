@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Text, Button, Surface } from '@cloudflare/kumo';
+import { UploadSimple } from '@phosphor-icons/react/dist/csr/UploadSimple';
+import { X } from '@phosphor-icons/react/dist/csr/X';
 import { useAuth } from '../contexts/AuthContext';
 
 const categories = [
@@ -15,13 +17,16 @@ const categories = [
 ];
 
 export default function SubmitSite() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const editId = searchParams.get('edit');
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(!!editId);
   const [error, setError] = useState('');
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [dragActive, setDragActive] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     url: '',
@@ -30,6 +35,8 @@ export default function SubmitSite() {
     category: 'saas',
     tags: ''
   });
+
+  const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
 
   useEffect(() => {
     if (editId && isAuthenticated) {
@@ -85,6 +92,36 @@ export default function SubmitSite() {
     });
   };
 
+  const handleImageChange = (file) => {
+    if (file && file.type.startsWith('image/')) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setDragActive(true);
+    } else if (e.type === 'dragleave') {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleImageChange(e.dataTransfer.files[0]);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -93,19 +130,43 @@ export default function SubmitSite() {
     try {
       const tags = formData.tags.split(',').map(t => t.trim()).filter(Boolean);
       
+      // Upload image first if there is one
+      let thumbnailUrl = null;
+      if (imageFile && isAdmin) {
+        const imageFormData = new FormData();
+        imageFormData.append('image', imageFile);
+        
+        const imageResponse = await fetch(`${import.meta.env.VITE_API_URL}/upload/image`, {
+          method: 'POST',
+          credentials: 'include',
+          body: imageFormData
+        });
+        
+        if (imageResponse.ok) {
+          const imageData = await imageResponse.json();
+          thumbnailUrl = imageData.url;
+        }
+      }
+      
       const url = editId 
         ? `${import.meta.env.VITE_API_URL}/sites/${editId}`
         : `${import.meta.env.VITE_API_URL}/sites`;
       const method = editId ? 'PUT' : 'POST';
       
+      const payload = {
+        ...formData,
+        tags
+      };
+      
+      if (thumbnailUrl) {
+        payload.thumbnail_url = thumbnailUrl;
+      }
+      
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({
-          ...formData,
-          tags
-        })
+        body: JSON.stringify(payload)
       });
 
       const data = await response.json();
@@ -239,6 +300,75 @@ export default function SubmitSite() {
                 Separate tags with commas
               </Text>
             </div>
+
+            {isAdmin && (
+              <div>
+                <label className="block mb-2">
+                  <Text weight="semibold">Site Preview Image (Admin Only)</Text>
+                </label>
+                <div
+                  onDragEnter={handleDrag}
+                  onDragLeave={handleDrag}
+                  onDragOver={handleDrag}
+                  onDrop={handleDrop}
+                  className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                    dragActive
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/10'
+                      : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
+                  }`}
+                >
+                  {imagePreview ? (
+                    <div className="relative">
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="max-h-64 mx-auto rounded-lg"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setImageFile(null);
+                          setImagePreview(null);
+                        }}
+                        className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                      >
+                        <X size={20} weight="bold" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div>
+                      <UploadSimple size={48} className="mx-auto mb-4 text-gray-400" />
+                      <Text weight="semibold" className="mb-2">
+                        Drag and drop an image here, or click to select
+                      </Text>
+                      <Text size="sm" color="secondary" className="mb-4">
+                        Recommended: 1200x630px (16:9 aspect ratio)
+                      </Text>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => e.target.files?.[0] && handleImageChange(e.target.files[0])}
+                        className="hidden"
+                        id="image-upload"
+                      />
+                      <label htmlFor="image-upload">
+                        <Button
+                          type="button"
+                          variant="outlined"
+                          size="sm"
+                          onClick={() => document.getElementById('image-upload')?.click()}
+                        >
+                          Select Image
+                        </Button>
+                      </label>
+                    </div>
+                  )}
+                </div>
+                <Text size="sm" color="secondary" className="mt-1">
+                  Upload a custom preview image for this site
+                </Text>
+              </div>
+            )}
 
             <div className="flex gap-4 pt-4">
               <Button

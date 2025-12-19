@@ -41,7 +41,7 @@ export default function UserMenu() {
             <User size={20} weight="bold" className="text-white" />
           </div>
         )}
-        <Text weight="medium" className="hidden md:block text-white">{user.name}</Text>
+        <Text weight="medium" className="hidden md:block text-gray-900 dark:text-white">{user.name}</Text>
       </button>
 
       {isOpen && (

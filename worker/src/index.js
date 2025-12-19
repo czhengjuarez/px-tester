@@ -19,6 +19,8 @@ import {
   handleGetUsers,
   handleUpgradeUser
 } from './admin-routes.js';
+import { handleImageUpload } from './upload-routes.js';
+import { handleGetScreenshot } from './screenshot-routes.js';
 import { authenticate } from './auth.js';
 
 export default {
@@ -122,6 +124,11 @@ export default {
         return handleUpgradeUser(env, user, userId, body.role, corsHeaders);
       }
 
+      // Image upload
+      if (url.pathname === '/api/upload/image' && request.method === 'POST') {
+        return handleImageUpload(request, env, user, corsHeaders);
+      }
+
       // AI Search
       if (url.pathname === '/api/search' && request.method === 'GET') {
         return handleAISearch(request, env, corsHeaders);
@@ -133,7 +140,7 @@ export default {
         return handleGetSimilarSites(id, env, corsHeaders);
       }
 
-      // Screenshot serving
+      // Screenshot serving (public access)
       if (url.pathname.match(/^\/screenshots\/.+$/)) {
         const filename = url.pathname.replace('/screenshots/', '');
         return handleGetScreenshot(filename, env, corsHeaders);

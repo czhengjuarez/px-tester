@@ -31,3 +31,12 @@ binding = "BROWSER"
 [vars]
 FRONTEND_URL = "https://demo.px-tester.workers.dev"
 GOOGLE_REDIRECT_URI = "https://px-tester-api.px-tester.workers.dev/api/auth/google/callback"
+
+# Observability - Logging configuration
+[observability]
+enabled = true
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+invocation_logs = true

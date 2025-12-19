@@ -1,18 +1,37 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Button, Text, Badge } from '@cloudflare/kumo'
 import { MagnifyingGlass } from '@phosphor-icons/react/dist/csr/MagnifyingGlass'
 import { Sparkle } from '@phosphor-icons/react/dist/csr/Sparkle'
 import { TrendUp } from '@phosphor-icons/react/dist/csr/TrendUp'
 import SiteCard from '../components/site/SiteCard'
-import { mockSites, featuredSites } from '../data/mockSites'
+import { featuredSites } from '../data/mockSites'
 
 export default function Home() {
-  const recentSites = mockSites.slice(0, 6)
+  const [recentSites, setRecentSites] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchRecentSites()
+  }, [])
+
+  const fetchRecentSites = async () => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
+      const response = await fetch(`${API_URL}/sites?limit=6&sort=newest`)
+      const data = await response.json()
+      setRecentSites(data.sites || [])
+    } catch (error) {
+      console.error('Failed to fetch recent sites:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-gray-900 py-20">
+      <section className="bg-gray-900 py-20 dotted-pattern">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             {/* Badge */}
@@ -24,11 +43,11 @@ export default function Home() {
             </div>
 
             {/* Heading */}
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 text-gray-900 dark:text-white">
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 text-white">
               Our Living Catalog of &quot;What If?&quot;
             </h1>
             
-            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
               A sandbox for the PX team and beyond. We&apos;re using AI to bridge the gap between design and code. See what we&apos;re building, then add your own.
             </p>
 
@@ -92,7 +111,7 @@ export default function Home() {
       </section>
 
       {/* Recent Submissions */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-gray-50 dark:bg-gray-900">
         <div className="container mx-auto px-4">
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-3 mb-2">

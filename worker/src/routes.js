@@ -116,7 +116,7 @@ export async function handleCreateSite(request, env, user, corsHeaders, ctx) {
 
   try {
     const data = await request.json();
-    const { name, url, description, short_description, category, tags } = data;
+    const { name, url, description, short_description, category, tags, thumbnail_url } = data;
 
     // Validate required fields
     if (!name || !url || !category) {
@@ -145,17 +145,17 @@ export async function handleCreateSite(request, env, user, corsHeaders, ctx) {
     const id = crypto.randomUUID();
     const now = Date.now();
 
-    // Insert site with pending status
+    // Insert site with pending status (including thumbnail_url if provided)
     await env.DB.prepare(`
       INSERT INTO sites (
         id, name, url, description, short_description, category, tags,
-        user_id, submitted_at, status, views, likes, is_featured,
+        thumbnail_url, user_id, submitted_at, status, views, likes, is_featured,
         created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       id, name, url, description || '', short_description || '',
-      category, JSON.stringify(tags || []), user.id, now, 'pending',
-      0, 0, 0, now, now
+      category, JSON.stringify(tags || []), thumbnail_url || null,
+      user.id, now, 'pending', 0, 0, 0, now, now
     ).run();
 
     // Capture screenshot and generate embeddings asynchronously
@@ -292,12 +292,12 @@ export async function handleUpdateSite(request, env, user, id, corsHeaders) {
 
   try {
     const data = await request.json();
-    const { name, url, description, short_description, category, tags } = data;
+    const { name, url, description, short_description, category, tags, thumbnail_url } = data;
 
     await env.DB.prepare(`
       UPDATE sites 
       SET name = ?, url = ?, description = ?, short_description = ?,
-          category = ?, tags = ?, updated_at = ?
+          category = ?, tags = ?, thumbnail_url = ?, updated_at = ?
       WHERE id = ?
     `).bind(
       name || site.name,
@@ -306,6 +306,7 @@ export async function handleUpdateSite(request, env, user, id, corsHeaders) {
       short_description !== undefined ? short_description : site.short_description,
       category || site.category,
       tags ? JSON.stringify(tags) : site.tags,
+      thumbnail_url !== undefined ? thumbnail_url : site.thumbnail_url,
       Date.now(),
       id
     ).run();
