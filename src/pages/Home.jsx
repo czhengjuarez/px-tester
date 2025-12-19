@@ -66,20 +66,16 @@ export default function Home() {
 
             {/* CTA Buttons */}
             <div className="flex items-center justify-center gap-4">
-              <div>
-                <Link to="/browse">
-                  <Button variant="primary" size="lg">
-                    Browse Catalog
-                  </Button>
-                </Link>
-              </div>
-              <div>
-                <Link to="/submit">
-                  <Button variant="outlined" size="lg">
-                    Submit Your Site
-                  </Button>
-                </Link>
-              </div>
+              <Link to="/browse">
+                <button className="px-6 py-3 bg-white text-gray-900 font-semibold rounded-lg hover:bg-gray-100 transition-colors shadow-lg">
+                  Browse Catalog
+                </button>
+              </Link>
+              <Link to="/submit">
+                <button className="px-6 py-3 bg-transparent text-white font-semibold rounded-lg border-2 border-white hover:bg-white hover:text-gray-900 transition-colors">
+                  Submit Your Site
+                </button>
+              </Link>
             </div>
           </div>
         </div>
