@@ -1,15 +1,63 @@
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { Surface, Text, Badge } from '@cloudflare/kumo'
 import { Heart } from '@phosphor-icons/react/dist/csr/Heart'
 import { Eye } from '@phosphor-icons/react/dist/csr/Eye'
 import { ArrowUpRight } from '@phosphor-icons/react/dist/csr/ArrowUpRight'
 
 export default function SiteCard({ site }) {
+  const navigate = useNavigate()
+  const [liked, setLiked] = useState(false)
+  const [likeCount, setLikeCount] = useState(site.likes || 0)
+  const [isProcessing, setIsProcessing] = useState(false)
   const formatNumber = (num) => {
     if (num >= 1000) {
       return `${(num / 1000).toFixed(1)}k`
     }
     return num
+  }
+
+  const handleLike = async (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    if (isProcessing) return
+    
+    setIsProcessing(true)
+    const newLikedState = !liked
+    const newCount = newLikedState ? likeCount + 1 : likeCount - 1
+    
+    // Optimistic update
+    setLiked(newLikedState)
+    setLikeCount(newCount)
+    
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
+      const response = await fetch(`${API_URL}/sites/${site.id}/like`, {
+        method: 'POST',
+        credentials: 'include'
+      })
+      
+      if (!response.ok) {
+        // Revert on error
+        setLiked(!newLikedState)
+        setLikeCount(likeCount)
+      }
+    } catch (error) {
+      // Revert on error
+      setLiked(!newLikedState)
+      setLikeCount(likeCount)
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleCardClick = (e) => {
+    // Don't navigate if clicking on interactive elements
+    if (e.target.closest('button') || e.target.closest('[data-interactive]')) {
+      return
+    }
+    navigate(`/site/${site.id}`)
   }
 
   const tags = typeof site.tags === 'string' ? JSON.parse(site.tags) : site.tags;
@@ -22,7 +70,7 @@ export default function SiteCard({ site }) {
     : null;
 
   return (
-    <Link to={`/site/${site.id}`}>
+    <div onClick={handleCardClick} role="article" aria-label={`${site.name} - ${site.category} site`}>
       <Surface className="group overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer h-full flex flex-col">
         {/* Screenshot or placeholder */}
         <div className="aspect-video bg-gradient-to-br from-blue-500 to-purple-600 relative overflow-hidden">
@@ -72,18 +120,27 @@ export default function SiteCard({ site }) {
 
             {/* Stats */}
             <div className="flex items-center gap-4 text-gray-500 dark:text-gray-400">
-              <div className="flex items-center gap-1.5">
-                <Heart size={16} weight="fill" className="flex-shrink-0" />
-                <Text size="sm" className="leading-none">{formatNumber(site.likes)}</Text>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Eye size={16} className="flex-shrink-0" />
+              <button
+                onClick={handleLike}
+                disabled={isProcessing}
+                data-interactive
+                className={`flex items-center gap-1.5 transition-all hover:scale-110 ${
+                  liked ? 'text-red-500' : 'hover:text-red-500'
+                }`}
+                aria-label={liked ? 'Unlike this site' : 'Like this site'}
+                title={liked ? 'Click to unlike' : 'Click to like'}
+              >
+                <Heart size={16} weight={liked ? 'fill' : 'regular'} className="flex-shrink-0" aria-hidden="true" />
+                <Text size="sm" className="leading-none">{formatNumber(likeCount)}</Text>
+              </button>
+              <div className="flex items-center gap-1.5" aria-label={`${formatNumber(site.views)} views`}>
+                <Eye size={16} className="flex-shrink-0" aria-hidden="true" />
                 <Text size="sm" className="leading-none">{formatNumber(site.views)}</Text>
               </div>
             </div>
           </div>
         </div>
       </Surface>
-    </Link>
+    </div>
   )
 }

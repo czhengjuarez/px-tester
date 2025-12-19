@@ -24,16 +24,19 @@ export default function Footer() {
             </Text>
             <div className="flex gap-4 mt-6">
               <a href="https://github.com" target="_blank" rel="noopener noreferrer" 
+                 aria-label="Visit our GitHub page"
                  className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
-                <GithubLogo size={24} weight="fill" />
+                <GithubLogo size={24} weight="fill" aria-hidden="true" />
               </a>
               <a href="https://twitter.com" target="_blank" rel="noopener noreferrer"
+                 aria-label="Follow us on Twitter"
                  className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
-                <TwitterLogo size={24} weight="fill" />
+                <TwitterLogo size={24} weight="fill" aria-hidden="true" />
               </a>
               <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer"
+                 aria-label="Connect with us on LinkedIn"
                  className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
-                <LinkedinLogo size={24} weight="fill" />
+                <LinkedinLogo size={24} weight="fill" aria-hidden="true" />
               </a>
             </div>
           </div>

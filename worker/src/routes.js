@@ -209,6 +209,40 @@ export async function handleCreateSite(request, env, user, corsHeaders, ctx) {
   }
 }
 
+export async function handleLikeSite(env, user, siteId, corsHeaders) {
+  try {
+    // Get current likes count
+    const { results } = await env.DB.prepare(
+      'SELECT likes FROM sites WHERE id = ?'
+    ).bind(siteId).all();
+
+    if (results.length === 0) {
+      return new Response(JSON.stringify({ error: 'Site not found' }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    const currentLikes = results[0].likes || 0;
+    const newLikes = currentLikes + 1;
+
+    // Update likes count
+    await env.DB.prepare(
+      'UPDATE sites SET likes = ? WHERE id = ?'
+    ).bind(newLikes, siteId).run();
+
+    return new Response(JSON.stringify({ likes: newLikes }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  } catch (error) {
+    console.error('Like site error:', error);
+    return new Response(JSON.stringify({ error: 'Failed to like site' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+}
+
 export async function handleGetMySites(env, user, corsHeaders) {
   if (!user) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {

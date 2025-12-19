@@ -10,11 +10,14 @@ import {
   handleGetMySites,
   handleUpdateSite,
   handleDeleteSite,
+  handleLikeSite
 } from './routes.js';
 import {
   handleGetPendingSites,
   handleApproveSite,
-  handleRejectSite
+  handleRejectSite,
+  handleGetUsers,
+  handleUpgradeUser
 } from './admin-routes.js';
 import { authenticate } from './auth.js';
 
@@ -88,6 +91,11 @@ export default {
         return handleGetCategories(env, corsHeaders);
       }
 
+      if (url.pathname.match(/^\/api\/sites\/[^/]+\/like$/) && request.method === 'POST') {
+        const id = url.pathname.split('/')[3];
+        return handleLikeSite(env, user, id, corsHeaders);
+      }
+
       // Admin routes
       if (url.pathname === '/api/admin/pending' && request.method === 'GET') {
         return handleGetPendingSites(env, user, corsHeaders);
@@ -101,6 +109,17 @@ export default {
       if (url.pathname.match(/^\/api\/admin\/sites\/[^/]+\/reject$/) && request.method === 'POST') {
         const id = url.pathname.split('/')[4];
         return handleRejectSite(env, user, id, corsHeaders);
+      }
+
+      if (url.pathname === '/api/admin/users' && request.method === 'GET') {
+        const searchQuery = url.searchParams.get('search') || '';
+        return handleGetUsers(env, user, corsHeaders, searchQuery);
+      }
+
+      if (url.pathname.match(/^\/api\/admin\/users\/[^/]+\/upgrade$/) && request.method === 'POST') {
+        const userId = url.pathname.split('/')[4];
+        const body = await request.json();
+        return handleUpgradeUser(env, user, userId, body.role, corsHeaders);
       }
 
       // AI Search

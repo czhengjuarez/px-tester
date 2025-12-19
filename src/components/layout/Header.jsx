@@ -31,11 +31,6 @@ export default function Header() {
             <Link to="/search" className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors hidden sm:block">
               <span className="font-medium">Search</span>
             </Link>
-            {isAuthenticated && (
-              <Link to="/admin" className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
-                <span className="font-medium">Admin</span>
-              </Link>
-            )}
           </nav>
 
           {/* Actions */}

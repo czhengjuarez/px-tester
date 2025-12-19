@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Text, Button, Badge, Surface } from '@cloudflare/kumo';
 import { ArrowSquareOut } from '@phosphor-icons/react/dist/csr/ArrowSquareOut';
@@ -6,6 +7,7 @@ import { ArrowUpRight } from '@phosphor-icons/react/dist/csr/ArrowUpRight';
 import { Calendar } from '@phosphor-icons/react/dist/csr/Calendar';
 import { Heart } from '@phosphor-icons/react/dist/csr/Heart';
 import { Eye } from '@phosphor-icons/react/dist/csr/Eye';
+import { ShareNetwork } from '@phosphor-icons/react/dist/csr/ShareNetwork';
 import { LoadingSpinner, ErrorMessage } from '../components/common/LoadingStates';
 import SiteCard from '../components/site/SiteCard';
 import { useSite } from '../hooks/useSites'
@@ -13,6 +15,9 @@ import { useSite } from '../hooks/useSites'
 export default function SiteDetail() {
   const { id } = useParams()
   const { data, isLoading, isError, error, refetch } = useSite(id)
+  const [liked, setLiked] = useState(false)
+  const [likeCount, setLikeCount] = useState(0)
+  const [isLiking, setIsLiking] = useState(false)
 
   if (isLoading) {
     return (
@@ -45,6 +50,73 @@ export default function SiteDetail() {
 
   const site = data.site
   const similarSites = data.similarSites || []
+  
+  // Initialize like count from site data
+  if (likeCount === 0 && site?.likes) {
+    setLikeCount(site.likes)
+  }
+  
+  const handleLike = async () => {
+    if (isLiking) return
+    
+    setIsLiking(true)
+    const newLikedState = !liked
+    const newCount = newLikedState ? likeCount + 1 : likeCount - 1
+    
+    // Optimistic update
+    setLiked(newLikedState)
+    setLikeCount(newCount)
+    
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
+      const response = await fetch(`${API_URL}/sites/${id}/like`, {
+        method: 'POST',
+        credentials: 'include'
+      })
+      
+      if (!response.ok) {
+        // Revert on error
+        setLiked(!newLikedState)
+        setLikeCount(likeCount)
+      }
+    } catch (error) {
+      // Revert on error
+      setLiked(!newLikedState)
+      setLikeCount(likeCount)
+    } finally {
+      setIsLiking(false)
+    }
+  }
+  
+  const handleShare = async () => {
+    const url = window.location.href
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: site.name,
+          text: site.short_description,
+          url: url
+        })
+      } catch (err) {
+        // User cancelled or error - fallback to clipboard
+        if (err.name !== 'AbortError') {
+          copyToClipboard(url)
+        }
+      }
+    } else {
+      copyToClipboard(url)
+    }
+  }
+  
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      alert('Link copied to clipboard!')
+    } catch (err) {
+      console.error('Failed to copy:', err)
+    }
+  }
 
   const tags = site?.tags ? (typeof site.tags === 'string' ? JSON.parse(site.tags) : site.tags) : [];
   const API_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://px-tester-api.px-tester.workers.dev';
@@ -110,10 +182,18 @@ export default function SiteDetail() {
 
               {/* Stats */}
               <div className="flex items-center gap-6 text-gray-600 dark:text-gray-400">
-                <div className="flex items-center gap-2">
-                  <Heart size={20} weight="fill" className="text-red-500" />
-                  <Text>{site.likes.toLocaleString()} likes</Text>
-                </div>
+                <button 
+                  onClick={handleLike}
+                  disabled={isLiking}
+                  className="flex items-center gap-2 hover:scale-105 transition-transform cursor-pointer"
+                >
+                  <Heart 
+                    size={20} 
+                    weight={liked ? "fill" : "regular"} 
+                    className={liked ? "text-red-500" : "text-gray-400 hover:text-red-500"} 
+                  />
+                  <Text className={liked ? "text-red-500 font-semibold" : ""}>{likeCount.toLocaleString()} likes</Text>
+                </button>
                 <div className="flex items-center gap-2">
                   <Eye size={20} />
                   <Text>{site.views.toLocaleString()} views</Text>
@@ -151,11 +231,21 @@ export default function SiteDetail() {
               <Text weight="bold" className="mb-4">Quick Actions</Text>
               
               <div className="space-y-3">
-                <Button variant="outlined" className="w-full justify-center">
-                  <Heart size={20} />
-                  Like this site
+                <Button 
+                  variant="outlined" 
+                  className="w-full justify-center"
+                  onClick={handleLike}
+                  disabled={isLiking}
+                >
+                  <Heart size={20} weight={liked ? 'fill' : 'regular'} className={liked ? 'text-red-500' : ''} />
+                  {liked ? 'Liked' : 'Like this site'}
                 </Button>
-                <Button variant="outlined" className="w-full justify-center">
+                <Button 
+                  variant="outlined" 
+                  className="w-full justify-center"
+                  onClick={handleShare}
+                >
+                  <ShareNetwork size={20} />
                   Share
                 </Button>
               </div>

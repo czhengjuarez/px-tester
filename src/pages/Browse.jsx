@@ -48,7 +48,7 @@ export default function Browse() {
         {/* Filters */}
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-6">
-            <Faders size={24} className="text-gray-600 dark:text-gray-400" />
+            <Faders size={24} className="text-gray-600 dark:text-gray-400" aria-label="Filter icon" />
             <Text weight="semibold">Filter by Category</Text>
           </div>
           
@@ -62,8 +62,8 @@ export default function Browse() {
                 }}
                 className={`px-4 py-2 rounded-lg transition-all border-2 ${
                   selectedCategory === category.id
-                    ? 'border-blue-600 bg-blue-600 text-white font-semibold shadow-md'
-                    : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-gray-400 dark:hover:border-gray-500'
+                    ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/10 text-orange-600 dark:text-orange-400 font-medium'
+                    : 'border-gray-200 dark:border-gray-700 bg-transparent text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600'
                 }`}
               >
                 <Text weight="medium">{category.name}</Text>
@@ -87,10 +87,10 @@ export default function Browse() {
                     setSortBy(option.value)
                     setPage(1)
                   }}
-                  className={`px-3 py-1.5 rounded-md text-sm transition-all border ${
+                  className={`px-3 py-1.5 rounded-md text-sm transition-all border-2 ${
                     sortBy === option.value
-                      ? 'border-blue-600 bg-blue-600 text-white font-semibold'
-                      : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500'
+                      ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/10 text-orange-600 dark:text-orange-400 font-medium'
+                      : 'border-gray-200 dark:border-gray-700 bg-transparent text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600'
                   }`}
                 >
                   {option.label}
@@ -154,10 +154,10 @@ export default function Browse() {
                       <button
                         key={pageNum}
                         onClick={() => setPage(pageNum)}
-                        className={`w-10 h-10 rounded-lg transition-all ${
+                        className={`w-10 h-10 rounded-lg transition-all border ${
                           page === pageNum
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                            ? 'border-blue-600 bg-blue-600 text-white'
+                            : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-blue-400 dark:hover:border-blue-500'
                         }`}
                       >
                         {pageNum}

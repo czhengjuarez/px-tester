@@ -3,20 +3,33 @@ import { Text, Button, Surface, Badge } from '@cloudflare/kumo'
 import { Check } from '@phosphor-icons/react/dist/csr/Check'
 import { X } from '@phosphor-icons/react/dist/csr/X'
 import { Eye } from '@phosphor-icons/react/dist/csr/Eye'
+import { MagnifyingGlass } from '@phosphor-icons/react/dist/csr/MagnifyingGlass'
 import { useAuth } from '../contexts/AuthContext'
 import { LoadingSpinner, ErrorMessage } from '../components/common/LoadingStates'
 import api from '../services/api'
 
 export default function Admin() {
   const { user } = useAuth()
+  const [activeTab, setActiveTab] = useState('sites')
   const [pendingSites, setPendingSites] = useState([])
+  const [users, setUsers] = useState([])
+  const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [processingId, setProcessingId] = useState(null)
 
   useEffect(() => {
-    fetchPendingSites()
-  }, [])
+    if (activeTab === 'sites') {
+      fetchPendingSites()
+    } else if (activeTab === 'users') {
+      // Debounce search - wait 500ms after user stops typing
+      const timeoutId = setTimeout(() => {
+        fetchUsers()
+      }, 500)
+      
+      return () => clearTimeout(timeoutId)
+    }
+  }, [activeTab, searchQuery])
 
   const fetchPendingSites = async () => {
     try {
@@ -83,6 +96,55 @@ export default function Admin() {
     }
   }
 
+  const fetchUsers = async () => {
+    try {
+      setLoading(true)
+      const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
+      const url = searchQuery 
+        ? `${API_URL}/admin/users?search=${encodeURIComponent(searchQuery)}`
+        : `${API_URL}/admin/users`
+      
+      const response = await fetch(url, {
+        credentials: 'include'
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch users')
+      }
+      
+      const data = await response.json()
+      setUsers(data.users || [])
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleUpgradeUser = async (userId, newRole) => {
+    try {
+      setProcessingId(userId)
+      const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
+      const response = await fetch(`${API_URL}/admin/users/${userId}/upgrade`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ role: newRole })
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to upgrade user')
+      }
+      
+      // Refresh users list
+      fetchUsers()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setProcessingId(null)
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -108,8 +170,32 @@ export default function Admin() {
             Admin Panel
           </Text>
           <Text color="secondary">
-            Review and approve pending site submissions
+            Manage site submissions and users
           </Text>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-2 mb-8 border-b border-gray-200 dark:border-gray-700">
+          <button
+            onClick={() => setActiveTab('sites')}
+            className={`px-4 py-2 font-medium transition-colors border-b-2 ${
+              activeTab === 'sites'
+                ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+            }`}
+          >
+            Pending Sites
+          </button>
+          <button
+            onClick={() => setActiveTab('users')}
+            className={`px-4 py-2 font-medium transition-colors border-b-2 ${
+              activeTab === 'users'
+                ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+            }`}
+          >
+            Users
+          </button>
         </div>
 
         {/* Stats */}
@@ -120,7 +206,9 @@ export default function Admin() {
           </Surface>
         </div>
 
-        {/* Pending Sites */}
+        {/* Sites Tab */}
+        {activeTab === 'sites' && (
+          <>
         {pendingSites.length === 0 ? (
           <Surface className="p-12 text-center">
             <Text color="secondary" size="lg">
@@ -217,6 +305,106 @@ export default function Admin() {
               </Surface>
             ))}
           </div>
+        )}
+          </>
+        )}
+
+        {/* Users Tab */}
+        {activeTab === 'users' && (
+          <>
+            {/* Search */}
+            <div className="mb-6">
+              <div className="relative">
+                <MagnifyingGlass size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search users by name or email..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            {/* Users List */}
+            {users.length === 0 ? (
+              <Surface className="p-12 text-center">
+                <Text color="secondary" size="lg">
+                  No users found
+                </Text>
+              </Surface>
+            ) : (
+              <div className="space-y-4">
+                {users.map((u) => (
+                  <Surface key={u.id} className="p-6">
+                    <div className="flex items-center justify-between gap-6">
+                      {/* User Info */}
+                      <div className="flex items-center gap-4 flex-1">
+                        {u.avatar_url ? (
+                          <img src={u.avatar_url} alt={u.name} className="w-12 h-12 rounded-full" />
+                        ) : (
+                          <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">
+                            {u.name?.charAt(0) || 'U'}
+                          </div>
+                        )}
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Text weight="semibold">{u.name}</Text>
+                            <Badge 
+                              variant={u.role === 'super_admin' ? 'success' : u.role === 'admin' ? 'info' : 'secondary'}
+                              size="sm"
+                            >
+                              {u.role}
+                            </Badge>
+                          </div>
+                          <Text color="secondary" size="sm">{u.email}</Text>
+                          <Text color="secondary" size="sm">
+                            Joined {new Date(u.created_at).toLocaleDateString()}
+                          </Text>
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      {user.role === 'super_admin' && u.id !== user.id && (
+                        <div className="flex gap-2">
+                          {u.role !== 'super_admin' && (
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              onClick={() => handleUpgradeUser(u.id, 'super_admin')}
+                              disabled={processingId === u.id}
+                            >
+                              Make Super Admin
+                            </Button>
+                          )}
+                          {u.role !== 'admin' && u.role !== 'super_admin' && (
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => handleUpgradeUser(u.id, 'admin')}
+                              disabled={processingId === u.id}
+                            >
+                              Make Admin
+                            </Button>
+                          )}
+                          {u.role !== 'user' && (
+                            <Button
+                              variant="outlined"
+                              size="sm"
+                              onClick={() => handleUpgradeUser(u.id, 'user')}
+                              disabled={processingId === u.id}
+                            >
+                              Demote to User
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </Surface>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

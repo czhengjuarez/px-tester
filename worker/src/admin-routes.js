@@ -49,3 +49,53 @@ export async function handleRejectSite(env, user, siteId, corsHeaders) {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' }
   });
 }
+
+export async function handleGetUsers(env, user, corsHeaders, searchQuery = '') {
+  if (!user || user.role !== 'admin' && user.role !== 'super_admin') {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  let query = 'SELECT id, email, name, avatar_url, role, is_active, created_at, last_login FROM users';
+  let params = [];
+  
+  if (searchQuery) {
+    query += ' WHERE email LIKE ? OR name LIKE ?';
+    params = [`%${searchQuery}%`, `%${searchQuery}%`];
+  }
+  
+  query += ' ORDER BY created_at DESC';
+  
+  const { results } = await env.DB.prepare(query).bind(...params).all();
+
+  return new Response(JSON.stringify({ users: results }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+  });
+}
+
+export async function handleUpgradeUser(env, user, userId, newRole, corsHeaders) {
+  if (!user || user.role !== 'super_admin') {
+    return new Response(JSON.stringify({ error: 'Only super admins can upgrade users' }), {
+      status: 403,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  const validRoles = ['user', 'admin', 'super_admin'];
+  if (!validRoles.includes(newRole)) {
+    return new Response(JSON.stringify({ error: 'Invalid role' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  await env.DB.prepare(
+    'UPDATE users SET role = ?, updated_at = ? WHERE id = ?'
+  ).bind(newRole, Date.now(), userId).run();
+
+  return new Response(JSON.stringify({ success: true }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+  });
+}

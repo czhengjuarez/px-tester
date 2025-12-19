@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Text, Button, Surface } from '@cloudflare/kumo';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -17,7 +17,10 @@ const categories = [
 export default function SubmitSite() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const editId = searchParams.get('edit');
   const [loading, setLoading] = useState(false);
+  const [loadingData, setLoadingData] = useState(!!editId);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     name: '',
@@ -27,6 +30,37 @@ export default function SubmitSite() {
     category: 'saas',
     tags: ''
   });
+
+  useEffect(() => {
+    if (editId && isAuthenticated) {
+      fetchSiteData();
+    }
+  }, [editId, isAuthenticated]);
+
+  const fetchSiteData = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/sites/${editId}`, {
+        credentials: 'include'
+      });
+      const data = await response.json();
+      
+      if (response.ok && data.site) {
+        const site = data.site;
+        setFormData({
+          name: site.name || '',
+          url: site.url || '',
+          short_description: site.short_description || '',
+          description: site.description || '',
+          category: site.category || 'saas',
+          tags: Array.isArray(site.tags) ? site.tags.join(', ') : (typeof site.tags === 'string' ? JSON.parse(site.tags).join(', ') : '')
+        });
+      }
+    } catch (err) {
+      setError('Failed to load site data');
+    } finally {
+      setLoadingData(false);
+    }
+  };
 
   if (!isAuthenticated) {
     return (
@@ -59,8 +93,13 @@ export default function SubmitSite() {
     try {
       const tags = formData.tags.split(',').map(t => t.trim()).filter(Boolean);
       
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/sites`, {
-        method: 'POST',
+      const url = editId 
+        ? `${import.meta.env.VITE_API_URL}/sites/${editId}`
+        : `${import.meta.env.VITE_API_URL}/sites`;
+      const method = editId ? 'PUT' : 'POST';
+      
+      const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
@@ -89,10 +128,10 @@ export default function SubmitSite() {
       <div className="container mx-auto px-4 max-w-2xl">
         <div className="mb-8">
           <Text as="h1" size="3xl" weight="bold" className="mb-3">
-            Submit Your Site
+            {editId ? 'Edit Your Site' : 'Submit Your Site'}
           </Text>
           <Text color="secondary" size="lg">
-            Share your website with the community. Submissions are reviewed before going live.
+            {editId ? 'Update your site information below.' : 'Share your website with the community. Submissions are reviewed before going live.'}
           </Text>
         </div>
 
@@ -208,7 +247,7 @@ export default function SubmitSite() {
                 disabled={loading}
                 className="flex-1"
               >
-                {loading ? 'Submitting...' : 'Submit Site'}
+                {loading ? (editId ? 'Updating...' : 'Submitting...') : (editId ? 'Update Site' : 'Submit Site')}
               </Button>
               <Button
                 type="button"
