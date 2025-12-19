@@ -6,8 +6,10 @@ import { Sparkle } from '@phosphor-icons/react/dist/csr/Sparkle'
 import { TrendUp } from '@phosphor-icons/react/dist/csr/TrendUp'
 import SiteCard from '../components/site/SiteCard'
 import { featuredSites } from '../data/mockSites'
+import { useAuth } from '../contexts/AuthContext'
 
 export default function Home() {
+  const { isAuthenticated } = useAuth()
   const [recentSites, setRecentSites] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -73,7 +75,7 @@ export default function Home() {
               </Link>
               <Link to="/submit">
                 <button className="px-6 py-3 bg-transparent text-white font-semibold rounded-lg border-2 border-white hover:bg-white hover:text-gray-900 transition-colors">
-                  Log in to Submit Your Site
+                  {isAuthenticated ? 'Submit Your Site' : 'Log in to Submit Your Site'}
                 </button>
               </Link>
             </div>
