@@ -15,14 +15,23 @@ export async function handleAuthGoogle(request, env, corsHeaders) {
   const referer = request.headers.get('Referer') || request.headers.get('Origin');
   let originDomain = env.FRONTEND_URL; // default
   
+  console.log('[Auth Google] Referer:', referer);
+  console.log('[Auth Google] Origin:', request.headers.get('Origin'));
+  
   if (referer) {
     const refererUrl = new URL(referer);
     originDomain = `${refererUrl.protocol}//${refererUrl.host}`;
   }
   
+  console.log('[Auth Google] Origin domain:', originDomain);
+  
   // Encode origin domain in state parameter
   const state = btoa(JSON.stringify({ origin: originDomain }));
   const authUrl = getGoogleAuthUrl(env, state);
+  
+  console.log('[Auth Google] Generated OAuth URL:', authUrl);
+  console.log('[Auth Google] Client ID:', env.GOOGLE_CLIENT_ID);
+  console.log('[Auth Google] Redirect URI:', env.GOOGLE_REDIRECT_URI);
   
   return new Response(JSON.stringify({ url: authUrl }), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -76,16 +85,19 @@ export async function handleAuthCallback(request, env, corsHeaders) {
     const { token, expiresAt } = await createSession(env, user.id);
     console.log('[OAuth Callback] Created session, token:', token.substring(0, 10) + '...');
     
-    const cookieHeader = setSessionCookie(token, expiresAt);
-    console.log('[OAuth Callback] Cookie header:', cookieHeader);
-    console.log('[OAuth Callback] Redirecting to:', `${originDomain}/`);
+    // For cross-domain scenarios, pass token via URL parameter
+    // Frontend will set its own cookie from this token
+    const redirectUrl = new URL(originDomain);
+    redirectUrl.searchParams.set('auth_token', token);
+    redirectUrl.searchParams.set('expires', expiresAt.toString());
     
-    // Redirect back to origin domain with session cookie
+    console.log('[OAuth Callback] Redirecting to:', redirectUrl.toString());
+    
+    // Redirect back to origin domain with token in URL
     return new Response(null, {
       status: 302,
       headers: {
-        'Location': `${originDomain}/`,
-        'Set-Cookie': cookieHeader,
+        'Location': redirectUrl.toString(),
         ...corsHeaders
       }
     });

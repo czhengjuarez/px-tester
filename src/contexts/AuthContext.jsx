@@ -7,6 +7,26 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Check for auth token in URL (from OAuth callback)
+    const urlParams = new URLSearchParams(window.location.search);
+    const authToken = urlParams.get('auth_token');
+    const expires = urlParams.get('expires');
+    
+    if (authToken && expires) {
+      console.log('[Auth] Found auth token in URL, setting cookie');
+      // Set cookie on frontend domain
+      const maxAge = Math.floor((parseInt(expires) - Date.now()) / 1000);
+      document.cookie = `session=${authToken}; Path=/; Secure; SameSite=Lax; Max-Age=${maxAge}`;
+      
+      // Remove token from URL
+      urlParams.delete('auth_token');
+      urlParams.delete('expires');
+      const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+      window.history.replaceState({}, '', newUrl);
+      
+      console.log('[Auth] Cookie set, checking auth');
+    }
+    
     checkAuth();
   }, []);
 
