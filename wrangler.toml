@@ -4,11 +4,6 @@ compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
 workers_dev = true
 
-# Custom domain routes
-routes = [
-  { pattern = "demo.pxtester.com", custom_domain = true }
-]
-
 # D1 Database binding
 [[d1_databases]]
 binding = "DB"
@@ -36,7 +31,7 @@ binding = "BROWSER"
 # CORS configuration
 [vars]
 FRONTEND_URL = "https://demo.px-tester.workers.dev"
-GOOGLE_REDIRECT_URI = "https://demo.pxtester.com/api/auth/google/callback"
+GOOGLE_REDIRECT_URI = "https://px-tester-api.px-tester.workers.dev/api/auth/google/callback"
 
 # Observability - Logging configuration
 [observability]
