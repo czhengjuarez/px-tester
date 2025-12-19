@@ -12,11 +12,23 @@ export function AuthProvider({ children }) {
     const authToken = urlParams.get('auth_token');
     const expires = urlParams.get('expires');
     
+    console.log('[Auth] URL params:', { authToken: authToken ? authToken.substring(0, 10) + '...' : null, expires });
+    
     if (authToken && expires) {
       console.log('[Auth] Found auth token in URL, setting cookie');
+      console.log('[Auth] Current location:', window.location.href);
+      console.log('[Auth] Protocol:', window.location.protocol);
+      
       // Set cookie on frontend domain
       const maxAge = Math.floor((parseInt(expires) - Date.now()) / 1000);
-      document.cookie = `session=${authToken}; Path=/; Secure; SameSite=Lax; Max-Age=${maxAge}`;
+      const cookieString = `session=${authToken}; Path=/; Secure; SameSite=Lax; Max-Age=${maxAge}`;
+      console.log('[Auth] Setting cookie:', cookieString.substring(0, 50) + '...');
+      console.log('[Auth] Max-Age:', maxAge, 'seconds');
+      
+      document.cookie = cookieString;
+      
+      // Verify cookie was set
+      console.log('[Auth] document.cookie after setting:', document.cookie);
       
       // Remove token from URL
       urlParams.delete('auth_token');
@@ -24,7 +36,7 @@ export function AuthProvider({ children }) {
       const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
       window.history.replaceState({}, '', newUrl);
       
-      console.log('[Auth] Cookie set, checking auth');
+      console.log('[Auth] Cookie set, URL cleaned, checking auth');
     }
     
     checkAuth();
