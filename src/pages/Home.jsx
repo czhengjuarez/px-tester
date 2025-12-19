@@ -5,17 +5,29 @@ import { MagnifyingGlass } from '@phosphor-icons/react/dist/csr/MagnifyingGlass'
 import { Sparkle } from '@phosphor-icons/react/dist/csr/Sparkle'
 import { TrendUp } from '@phosphor-icons/react/dist/csr/TrendUp'
 import SiteCard from '../components/site/SiteCard'
-import { featuredSites } from '../data/mockSites'
 import { useAuth } from '../contexts/AuthContext'
 
 export default function Home() {
   const { isAuthenticated, login } = useAuth()
+  const [featuredSites, setFeaturedSites] = useState([])
   const [recentSites, setRecentSites] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    fetchFeaturedSites()
     fetchRecentSites()
   }, [])
+
+  const fetchFeaturedSites = async () => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
+      const response = await fetch(`${API_URL}/sites?featured=true&limit=3`)
+      const data = await response.json()
+      setFeaturedSites(data.sites || [])
+    } catch (error) {
+      console.error('Failed to fetch featured sites:', error)
+    }
+  }
 
   const fetchRecentSites = async () => {
     try {

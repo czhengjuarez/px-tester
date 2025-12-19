@@ -358,6 +358,7 @@ export async function handleDeleteSite(env, user, id, corsHeaders) {
 export async function handleGetSites(request, env, corsHeaders) {
   const url = new URL(request.url);
   const category = url.searchParams.get('category');
+  const featured = url.searchParams.get('featured');
   const sort = url.searchParams.get('sort') || 'newest';
   const page = parseInt(url.searchParams.get('page') || '1');
   const limit = parseInt(url.searchParams.get('limit') || '12');
@@ -365,6 +366,10 @@ export async function handleGetSites(request, env, corsHeaders) {
 
   let query = 'SELECT * FROM sites WHERE status = ?';
   const params = ['approved'];
+
+  if (featured === 'true') {
+    query += ' AND is_featured = 1';
+  }
 
   if (category && category !== 'all') {
     query += ' AND category = ?';
