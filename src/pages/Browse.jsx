@@ -60,10 +60,10 @@ export default function Browse() {
                   setSelectedCategory(category.id)
                   setPage(1)
                 }}
-                className={`px-4 py-2 rounded-lg transition-all ${
+                className={`px-4 py-2 rounded-lg transition-all border-2 ${
                   selectedCategory === category.id
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                    ? 'border-blue-600 bg-blue-600 text-white font-semibold shadow-md'
+                    : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-gray-400 dark:hover:border-gray-500'
                 }`}
               >
                 <Text weight="medium">{category.name}</Text>
@@ -87,10 +87,10 @@ export default function Browse() {
                     setSortBy(option.value)
                     setPage(1)
                   }}
-                  className={`px-3 py-1.5 rounded-md text-sm transition-all ${
+                  className={`px-3 py-1.5 rounded-md text-sm transition-all border ${
                     sortBy === option.value
-                      ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                      ? 'border-blue-600 bg-blue-600 text-white font-semibold'
+                      : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500'
                   }`}
                 >
                   {option.label}

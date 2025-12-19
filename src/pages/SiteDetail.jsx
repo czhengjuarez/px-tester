@@ -1,10 +1,11 @@
-import { useParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useParams, Link } from 'react-router-dom';
 import { Text, Button, Badge, Surface } from '@cloudflare/kumo';
 import { ArrowSquareOut } from '@phosphor-icons/react/dist/csr/ArrowSquareOut';
+import { ArrowLeft } from '@phosphor-icons/react/dist/csr/ArrowLeft';
+import { ArrowUpRight } from '@phosphor-icons/react/dist/csr/ArrowUpRight';
+import { Calendar } from '@phosphor-icons/react/dist/csr/Calendar';
 import { Heart } from '@phosphor-icons/react/dist/csr/Heart';
 import { Eye } from '@phosphor-icons/react/dist/csr/Eye';
-import { api } from '../services/api';
 import { LoadingSpinner, ErrorMessage } from '../components/common/LoadingStates';
 import SiteCard from '../components/site/SiteCard';
 import { useSite } from '../hooks/useSites'

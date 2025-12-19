@@ -41,33 +41,33 @@ export default function UserMenu() {
             <User size={20} weight="bold" className="text-white" />
           </div>
         )}
-        <Text weight="medium" className="hidden md:block">{user.name}</Text>
+        <Text weight="medium" className="hidden md:block text-white">{user.name}</Text>
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
+        <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-50">
           <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-            <Text weight="semibold">{user.name}</Text>
-            <Text size="sm" color="secondary">{user.email}</Text>
+            <Text weight="semibold" className="text-gray-900 dark:text-white">{user.name}</Text>
+            <Text size="sm" className="text-gray-600 dark:text-gray-400">{user.email}</Text>
           </div>
 
           <Link
             to="/dashboard"
-            className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300"
             onClick={() => setIsOpen(false)}
           >
             <User size={20} />
-            <Text>Dashboard</Text>
+            <Text className="text-gray-900 dark:text-white">Dashboard</Text>
           </Link>
 
           {user.role === 'admin' || user.role === 'super_admin' ? (
             <Link
               to="/admin"
-              className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300"
               onClick={() => setIsOpen(false)}
             >
               <Gear size={20} />
-              <Text>Admin Panel</Text>
+              <Text className="text-gray-900 dark:text-white">Admin Panel</Text>
             </Link>
           ) : null}
 
@@ -79,7 +79,7 @@ export default function UserMenu() {
             className="w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-red-600 dark:text-red-400"
           >
             <SignOut size={20} />
-            <Text>Sign Out</Text>
+            <Text className="text-red-600 dark:text-red-400">Sign Out</Text>
           </button>
         </div>
       )}

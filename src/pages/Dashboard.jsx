@@ -160,10 +160,12 @@ export default function Dashboard() {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <Button variant="outlined" size="sm">
-                        <Pencil size={16} />
-                        Edit
-                      </Button>
+                      <Link to={`/submit?edit=${site.id}`}>
+                        <Button variant="outlined" size="sm">
+                          <Pencil size={16} />
+                          Edit
+                        </Button>
+                      </Link>
                       <Button 
                         variant="outlined" 
                         size="sm"
