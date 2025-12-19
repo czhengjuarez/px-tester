@@ -73,7 +73,7 @@ export default function Home() {
               </Link>
               <Link to="/submit">
                 <button className="px-6 py-3 bg-transparent text-white font-semibold rounded-lg border-2 border-white hover:bg-white hover:text-gray-900 transition-colors">
-                  Submit Your Site
+                  Log in to Submit Your Site
                 </button>
               </Link>
             </div>
