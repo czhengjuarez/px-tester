@@ -142,18 +142,28 @@ export default function Admin() {
     try {
       setProcessingId(siteId)
       const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
-      const response = await fetch(`${API_URL}/admin/sites/${siteId}/toggle-featured`, {
+      const url = `${API_URL}/admin/sites/${siteId}/toggle-featured`
+      console.log('[Admin] Toggling featured for site:', siteId, 'URL:', url)
+      
+      const response = await fetch(url, {
         method: 'POST',
         credentials: 'include'
       })
       
+      console.log('[Admin] Toggle response status:', response.status)
+      const data = await response.json()
+      console.log('[Admin] Toggle response data:', data)
+      
       if (!response.ok) {
-        throw new Error('Failed to toggle featured status')
+        throw new Error(data.error || 'Failed to toggle featured status')
       }
+      
+      console.log('[Admin] Successfully toggled, new status:', data.is_featured)
       
       // Refresh sites list
       fetchAllSites()
     } catch (err) {
+      console.error('[Admin] Toggle featured error:', err)
       setError(err.message)
     } finally {
       setProcessingId(null)

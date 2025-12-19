@@ -164,7 +164,10 @@ export async function handleGetAllSites(env, user, corsHeaders, searchQuery = ''
 }
 
 export async function handleToggleFeatured(env, user, siteId, corsHeaders) {
+  console.log('[Toggle Featured] User:', user?.email, 'Role:', user?.role, 'SiteId:', siteId);
+  
   if (!user || user.role !== 'super_admin') {
+    console.log('[Toggle Featured] Authorization failed');
     return new Response(JSON.stringify({ error: 'Only super admins can feature sites' }), {
       status: 403,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -176,7 +179,10 @@ export async function handleToggleFeatured(env, user, siteId, corsHeaders) {
     'SELECT is_featured FROM sites WHERE id = ?'
   ).bind(siteId).all();
 
+  console.log('[Toggle Featured] Current status:', results[0]?.is_featured);
+
   if (!results || results.length === 0) {
+    console.log('[Toggle Featured] Site not found');
     return new Response(JSON.stringify({ error: 'Site not found' }), {
       status: 404,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -184,10 +190,13 @@ export async function handleToggleFeatured(env, user, siteId, corsHeaders) {
   }
 
   const newFeaturedStatus = results[0].is_featured ? 0 : 1;
+  console.log('[Toggle Featured] New status:', newFeaturedStatus);
 
-  await env.DB.prepare(
+  const updateResult = await env.DB.prepare(
     'UPDATE sites SET is_featured = ?, updated_at = ? WHERE id = ?'
   ).bind(newFeaturedStatus, Date.now(), siteId).run();
+
+  console.log('[Toggle Featured] Update result:', updateResult);
 
   return new Response(JSON.stringify({ success: true, is_featured: newFeaturedStatus }), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' }
