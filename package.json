@@ -1,0 +1,38 @@
+{
+  "name": "px-tester",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@base-ui-components/react": "^1.0.0-beta.4",
+    "@cloudflare/kumo": "file:../../CF/kumo/packages/kumo",
+    "@cloudflare/kv-asset-handler": "^0.4.1",
+    "@phosphor-icons/react": "^2.1.9",
+    "@tanstack/react-query": "^5.90.12",
+    "clsx": "^2.1.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.11.0",
+    "tailwind-merge": "^2.5.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "@tailwindcss/vite": "^4.1.17",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^9.17.0",
+    "eslint-plugin-react": "^7.37.2",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-react-refresh": "^0.4.16",
+    "globals": "^15.13.0",
+    "tailwindcss": "^4.1.13",
+    "vite": "^6.0.7"
+  }
+}

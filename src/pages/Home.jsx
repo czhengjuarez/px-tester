@@ -1,0 +1,135 @@
+import { Link } from 'react-router-dom'
+import { Button, Text, Badge } from '@cloudflare/kumo'
+import { MagnifyingGlass } from '@phosphor-icons/react/dist/csr/MagnifyingGlass'
+import { Sparkle } from '@phosphor-icons/react/dist/csr/Sparkle'
+import { TrendUp } from '@phosphor-icons/react/dist/csr/TrendUp'
+import SiteCard from '../components/site/SiteCard'
+import { mockSites, featuredSites } from '../data/mockSites'
+
+export default function Home() {
+  const recentSites = mockSites.slice(0, 6)
+
+  return (
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <section className="bg-gray-900 py-20">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 bg-white dark:bg-gray-800 rounded-full px-4 py-2 mb-6 border border-gray-300 dark:border-gray-700 shadow-sm">
+              <Sparkle size={20} weight="fill" className="text-orange-500" />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Powered by Cloudflare Workers AI
+              </span>
+            </div>
+
+            {/* Heading */}
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 text-gray-900 dark:text-white">
+              Our Living Catalog of &quot;What If?&quot;
+            </h1>
+            
+            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+              A sandbox for the PX team and beyond. We&apos;re using AI to bridge the gap between design and code. See what we&apos;re building, then add your own.
+            </p>
+
+            {/* Search Bar */}
+            <div className="max-w-2xl mx-auto mb-6">
+              <Link to="/search">
+                <div className="flex items-center gap-3 bg-white dark:bg-gray-800 rounded-xl p-4 hover:shadow-lg transition-shadow cursor-pointer border border-gray-300 dark:border-gray-700 shadow-sm">
+                  <MagnifyingGlass size={24} className="text-gray-400 dark:text-gray-400" />
+                  <span className="flex-1 text-left text-gray-500 dark:text-gray-400">
+                    Search for websites, tools, inspiration...
+                  </span>
+                  <Badge variant="info" size="sm">AI</Badge>
+                </div>
+              </Link>
+            </div>
+
+            {/* CTA Buttons */}
+            <div className="flex items-center justify-center gap-4">
+              <div>
+                <Link to="/browse">
+                  <Button variant="primary" size="lg">
+                    Browse Catalog
+                  </Button>
+                </Link>
+              </div>
+              <div>
+                <Link to="/submit">
+                  <Button variant="outlined" size="lg">
+                    Submit Your Site
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Sites */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <Text as="h2" size="3xl" weight="bold" className="mb-2">
+                Featured Sites
+              </Text>
+              <Text color="secondary">
+                Hand-picked by our team
+              </Text>
+            </div>
+            <Link to="/browse?featured=true">
+              <Button variant="outlined">View All</Button>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {featuredSites.map((site) => (
+              <SiteCard key={site.id} site={site} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Recent Submissions */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center gap-3 mb-2">
+              <TrendUp size={32} weight="bold" className="text-blue-600" />
+              <Text as="h2" size="3xl" weight="bold">
+                Recently Added
+              </Text>
+            </div>
+            <Text color="secondary">
+              Fresh submissions from the community
+            </Text>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {recentSites.map((site) => (
+              <SiteCard key={site.id} site={site} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 bg-orange-500 dark:bg-orange-600">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-4xl font-bold text-white mb-4">
+            Ready to Share Your Website?
+          </h2>
+          <p className="text-xl text-orange-100 mb-8 max-w-2xl mx-auto">
+            Join our community and showcase your work to thousands of visitors
+          </p>
+          <Link to="/submit" className="inline-block">
+            <Button variant="secondary" size="lg">
+              Submit Your Site
+            </Button>
+          </Link>
+        </div>
+      </section>
+    </div>
+  )
+}

@@ -1,0 +1,33 @@
+name = "px-tester-api"
+main = "worker/src/index.js"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "px-tester-db"
+database_id = "04077aab-abb7-4663-8049-6a2ba62f95d5"
+
+# Vectorize binding for AI embeddings
+[[vectorize]]
+binding = "VECTORIZE"
+index_name = "px-tester-embeddings"
+
+# R2 bucket for screenshots
+[[r2_buckets]]
+binding = "SCREENSHOTS"
+bucket_name = "px-tester-screenshots"
+
+# Workers AI binding
+[ai]
+binding = "AI"
+
+# Browser Rendering binding
+[browser]
+binding = "BROWSER"
+
+# CORS configuration
+[vars]
+FRONTEND_URL = "https://demo.px-tester.workers.dev"
+GOOGLE_REDIRECT_URI = "https://px-tester-api.px-tester.workers.dev/api/auth/google/callback"
