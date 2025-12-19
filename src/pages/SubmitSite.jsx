@@ -46,7 +46,8 @@ export default function SubmitSite() {
 
   const fetchSiteData = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/sites/${editId}`, {
+      const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
+      const response = await fetch(`${API_URL}/sites/${editId}`, {
         credentials: 'include'
       });
       const data = await response.json();
@@ -131,12 +132,14 @@ export default function SubmitSite() {
       const tags = formData.tags.split(',').map(t => t.trim()).filter(Boolean);
       
       // Upload image first if there is one
+      const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
+      
       let thumbnailUrl = null;
       if (imageFile && isAdmin) {
         const imageFormData = new FormData();
         imageFormData.append('image', imageFile);
         
-        const imageResponse = await fetch(`${import.meta.env.VITE_API_URL}/upload/image`, {
+        const imageResponse = await fetch(`${API_URL}/upload/image`, {
           method: 'POST',
           credentials: 'include',
           body: imageFormData
@@ -149,8 +152,8 @@ export default function SubmitSite() {
       }
       
       const url = editId 
-        ? `${import.meta.env.VITE_API_URL}/sites/${editId}`
-        : `${import.meta.env.VITE_API_URL}/sites`;
+        ? `${API_URL}/sites/${editId}`
+        : `${API_URL}/sites`;
       const method = editId ? 'PUT' : 'POST';
       
       const payload = {
