@@ -21,8 +21,11 @@ export default function Home() {
   const fetchFeaturedSites = async () => {
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
-      const response = await fetch(`${API_URL}/sites?featured=true&limit=3`)
+      const url = `${API_URL}/sites?featured=true&limit=3`
+      console.log('Fetching featured sites from:', url)
+      const response = await fetch(url)
       const data = await response.json()
+      console.log('Featured sites response:', data)
       setFeaturedSites(data.sites || [])
     } catch (error) {
       console.error('Failed to fetch featured sites:', error)
@@ -121,11 +124,19 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredSites.map((site) => (
-              <SiteCard key={site.id} site={site} />
-            ))}
-          </div>
+          {featuredSites.length === 0 ? (
+            <div className="text-center py-12">
+              <Text color="secondary" size="lg">
+                No featured sites yet. Check back soon!
+              </Text>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featuredSites.map((site) => (
+                <SiteCard key={site.id} site={site} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
