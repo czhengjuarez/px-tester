@@ -154,7 +154,7 @@ export default {
       }
 
       // Root path handler
-      if (url.pathname === '/') {
+      if (url.pathname === '/' || url.pathname === '') {
         return new Response(JSON.stringify({ 
           message: 'PX Tester API',
           version: '1.0.0',
@@ -168,8 +168,22 @@ export default {
         });
       }
 
-      // 404
-      return new Response(JSON.stringify({ error: 'Not found' }), {
+      // Cloudflare Access authorized callback - redirect to root
+      if (url.pathname === '/cdn-cgi/access/authorized') {
+        return Response.redirect(new URL('/', url.origin).toString(), 302);
+      }
+
+      // 404 - but provide helpful message
+      return new Response(JSON.stringify({ 
+        error: 'Not found',
+        message: `Path ${url.pathname} not found`,
+        availableEndpoints: {
+          root: '/',
+          health: '/api/health',
+          sites: '/api/sites',
+          auth: '/api/auth/me'
+        }
+      }), {
         status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
