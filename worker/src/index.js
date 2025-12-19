@@ -27,9 +27,16 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     
-    // CORS headers
+    // CORS headers - support multiple frontend origins
+    const allowedOrigins = [
+      'https://demo.px-tester.workers.dev',
+      'https://demo.pxtester.com',
+      'http://localhost:5173' // for local development
+    ];
+    
+    const origin = request.headers.get('Origin');
     const corsHeaders = {
-      'Access-Control-Allow-Origin': env.FRONTEND_URL || '*',
+      'Access-Control-Allow-Origin': allowedOrigins.includes(origin) ? origin : allowedOrigins[0],
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization, Cookie',
       'Access-Control-Allow-Credentials': 'true',
