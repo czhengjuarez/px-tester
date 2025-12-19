@@ -17,7 +17,8 @@ import {
   handleApproveSite,
   handleRejectSite,
   handleGetUsers,
-  handleUpgradeUser
+  handleUpgradeUser,
+  handleDeleteUser
 } from './admin-routes.js';
 import { handleImageUpload } from './upload-routes.js';
 import { handleGetScreenshot } from './screenshot-routes.js';
@@ -129,6 +130,12 @@ export default {
         const userId = url.pathname.split('/')[4];
         const body = await request.json();
         return handleUpgradeUser(env, user, userId, body.role, corsHeaders);
+      }
+
+      // Delete user
+      if (url.pathname.match(/^\/api\/admin\/users\/[^/]+$/) && request.method === 'DELETE') {
+        const userId = url.pathname.split('/')[4];
+        return handleDeleteUser(env, user, userId, corsHeaders);
       }
 
       // Image upload

@@ -99,3 +99,30 @@ export async function handleUpgradeUser(env, user, userId, newRole, corsHeaders)
     headers: { ...corsHeaders, 'Content-Type': 'application/json' }
   });
 }
+
+export async function handleDeleteUser(env, user, userId, corsHeaders) {
+  if (!user || user.role !== 'super_admin') {
+    return new Response(JSON.stringify({ error: 'Only super admins can delete users' }), {
+      status: 403,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  // Prevent deleting yourself
+  if (user.id === userId) {
+    return new Response(JSON.stringify({ error: 'Cannot delete your own account' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  // Delete user's sessions first
+  await env.DB.prepare('DELETE FROM sessions WHERE user_id = ?').bind(userId).run();
+  
+  // Delete the user
+  await env.DB.prepare('DELETE FROM users WHERE id = ?').bind(userId).run();
+
+  return new Response(JSON.stringify({ success: true }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+  });
+}

@@ -145,6 +145,32 @@ export default function Admin() {
     }
   }
 
+  const handleDeleteUser = async (userId) => {
+    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+      return
+    }
+
+    try {
+      setProcessingId(userId)
+      const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
+      const response = await fetch(`${API_URL}/admin/users/${userId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete user')
+      }
+      
+      // Refresh users list
+      fetchUsers()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setProcessingId(null)
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -397,6 +423,14 @@ export default function Admin() {
                               Demote to User
                             </Button>
                           )}
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={() => handleDeleteUser(u.id)}
+                            disabled={processingId === u.id}
+                          >
+                            Delete User
+                          </Button>
                         </div>
                       )}
                     </div>
