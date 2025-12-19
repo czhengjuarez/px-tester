@@ -64,9 +64,10 @@ export async function deleteSession(env, token) {
 
 export function setSessionCookie(token, expiresAt) {
   const maxAge = Math.floor((expiresAt - Date.now()) / 1000);
-  return `session=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`;
+  // SameSite=None is required for cross-origin cookies (custom domain to API domain)
+  return `session=${token}; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=${maxAge}`;
 }
 
 export function clearSessionCookie() {
-  return 'session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0';
+  return 'session=; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=0';
 }
