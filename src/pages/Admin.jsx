@@ -569,7 +569,7 @@ export default function Admin() {
               </select>
             </div>
 
-            {/* Sites List */}
+            {/* Sites Table */}
             {allSites.length === 0 ? (
               <Surface className="p-12 text-center">
                 <Text color="secondary" size="lg">
@@ -577,90 +577,110 @@ export default function Admin() {
                 </Text>
               </Surface>
             ) : (
-              <div className="space-y-4">
-                {allSites.map((site) => (
-                  <Surface key={site.id} className="p-6">
-                    <div className="flex items-start justify-between gap-6">
-                      {/* Site Info */}
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Text size="lg" weight="semibold">{site.name}</Text>
+              <Surface className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="border-b border-gray-200 dark:border-gray-700">
+                    <tr>
+                      <th className="text-left p-4">
+                        <div className="flex flex-col">
+                          <Text weight="semibold" size="sm">Featured</Text>
+                          <Text color="secondary" size="xs">(up to 3)</Text>
+                        </div>
+                      </th>
+                      <th className="text-left p-4">
+                        <Text weight="semibold" size="sm">Site Name</Text>
+                      </th>
+                      <th className="text-left p-4">
+                        <Text weight="semibold" size="sm">URL</Text>
+                      </th>
+                      <th className="text-left p-4">
+                        <Text weight="semibold" size="sm">Status</Text>
+                      </th>
+                      <th className="text-left p-4">
+                        <Text weight="semibold" size="sm">Submitted</Text>
+                      </th>
+                      <th className="text-left p-4">
+                        <Text weight="semibold" size="sm">Actions</Text>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allSites.map((site) => (
+                      <tr key={site.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                        <td className="p-4">
+                          <input
+                            type="checkbox"
+                            checked={site.is_featured === 1}
+                            onChange={() => handleToggleFeatured(site.id)}
+                            disabled={processingId === site.id}
+                            className="w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 cursor-pointer disabled:opacity-50"
+                          />
+                        </td>
+                        <td className="p-4">
+                          <Text weight="semibold">{site.name}</Text>
+                          {site.submitter_name && (
+                            <Text color="secondary" size="xs">
+                              by {site.submitter_name}
+                            </Text>
+                          )}
+                        </td>
+                        <td className="p-4">
+                          <a 
+                            href={site.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-blue-600 dark:text-blue-400 hover:underline text-sm"
+                          >
+                            {site.url.length > 40 ? site.url.substring(0, 40) + '...' : site.url}
+                          </a>
+                        </td>
+                        <td className="p-4">
                           <Badge 
                             variant={site.status === 'approved' ? 'success' : site.status === 'pending' ? 'warning' : 'danger'}
                             size="sm"
                           >
                             {site.status}
                           </Badge>
-                          {site.is_featured === 1 && (
-                            <Badge variant="info" size="sm">
-                              ⭐ Featured
-                            </Badge>
-                          )}
-                        </div>
-                        <a 
-                          href={site.url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-blue-600 dark:text-blue-400 hover:underline mb-2 block"
-                        >
-                          {site.url}
-                        </a>
-                        <Text color="secondary" size="sm" className="mb-2">
-                          {site.short_description || site.description?.substring(0, 100)}
-                        </Text>
-                        {site.submitter_name && (
-                          <Text color="secondary" size="sm">
-                            Submitted by {site.submitter_name} ({site.submitter_email})
+                        </td>
+                        <td className="p-4">
+                          <Text size="sm" color="secondary">
+                            {new Date(site.created_at).toLocaleDateString()}
                           </Text>
-                        )}
-                        <Text color="secondary" size="sm">
-                          Created {new Date(site.created_at).toLocaleDateString()}
-                        </Text>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex flex-col gap-2">
-                        <Button
-                          variant={site.is_featured ? 'warning' : 'secondary'}
-                          size="sm"
-                          onClick={() => handleToggleFeatured(site.id)}
-                          disabled={processingId === site.id}
-                        >
-                          {site.is_featured ? '⭐ Unfeature' : '⭐ Feature'}
-                        </Button>
-                        
-                        {site.status !== 'approved' && (
-                          <Button
-                            variant="success"
-                            size="sm"
-                            onClick={() => handleUpdateStatus(site.id, 'approved')}
-                            disabled={processingId === site.id}
-                          >
-                            Approve
-                          </Button>
-                        )}
-                        
-                        {site.status !== 'rejected' && (
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            onClick={() => handleUpdateStatus(site.id, 'rejected')}
-                            disabled={processingId === site.id}
-                          >
-                            Reject
-                          </Button>
-                        )}
-                        
-                        <a href={`/site/${site.id}`} target="_blank" rel="noopener noreferrer">
-                          <Button variant="outlined" size="sm">
-                            View Details
-                          </Button>
-                        </a>
-                      </div>
-                    </div>
-                  </Surface>
-                ))}
-              </div>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex gap-2">
+                            {site.status !== 'approved' && (
+                              <Button
+                                variant="success"
+                                size="sm"
+                                onClick={() => handleUpdateStatus(site.id, 'approved')}
+                                disabled={processingId === site.id}
+                              >
+                                Approve
+                              </Button>
+                            )}
+                            {site.status !== 'rejected' && (
+                              <Button
+                                variant="danger"
+                                size="sm"
+                                onClick={() => handleUpdateStatus(site.id, 'rejected')}
+                                disabled={processingId === site.id}
+                              >
+                                Reject
+                              </Button>
+                            )}
+                            <a href={`/site/${site.id}`} target="_blank" rel="noopener noreferrer">
+                              <Button variant="outlined" size="sm">
+                                View
+                              </Button>
+                            </a>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </Surface>
             )}
           </>
         )}
