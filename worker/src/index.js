@@ -153,6 +153,21 @@ export default {
         });
       }
 
+      // Root path handler
+      if (url.pathname === '/') {
+        return new Response(JSON.stringify({ 
+          message: 'PX Tester API',
+          version: '1.0.0',
+          endpoints: {
+            health: '/api/health',
+            sites: '/api/sites',
+            auth: '/api/auth/me'
+          }
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
       // 404
       return new Response(JSON.stringify({ error: 'Not found' }), {
         status: 404,
