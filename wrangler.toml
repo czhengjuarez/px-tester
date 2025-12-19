@@ -31,7 +31,7 @@ binding = "BROWSER"
 # CORS configuration
 [vars]
 FRONTEND_URL = "https://demo.px-tester.workers.dev"
-GOOGLE_REDIRECT_URI = "https://demo.pxtester.com/api/auth/google/callback"
+GOOGLE_REDIRECT_URI = "https://px-tester-api.px-tester.workers.dev/api/auth/google/callback"
 
 # Observability - Logging configuration
 [observability]
