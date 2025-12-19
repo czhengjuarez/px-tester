@@ -1,8 +1,8 @@
 // Image upload routes
 export async function handleImageUpload(request, env, user, corsHeaders) {
-  if (!user || (user.role !== 'admin' && user.role !== 'super_admin')) {
-    return new Response(JSON.stringify({ error: 'Unauthorized - Admin access required' }), {
-      status: 403,
+  if (!user) {
+    return new Response(JSON.stringify({ error: 'Unauthorized - Please sign in' }), {
+      status: 401,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }

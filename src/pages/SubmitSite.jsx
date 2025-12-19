@@ -135,7 +135,7 @@ export default function SubmitSite() {
       const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
       
       let thumbnailUrl = null;
-      if (imageFile && isAdmin) {
+      if (imageFile) {
         const imageFormData = new FormData();
         imageFormData.append('image', imageFile);
         
@@ -304,74 +304,72 @@ export default function SubmitSite() {
               </Text>
             </div>
 
-            {isAdmin && (
-              <div>
-                <label className="block mb-2">
-                  <Text weight="semibold">Site Preview Image (Admin Only)</Text>
-                </label>
-                <div
-                  onDragEnter={handleDrag}
-                  onDragLeave={handleDrag}
-                  onDragOver={handleDrag}
-                  onDrop={handleDrop}
-                  className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-                    dragActive
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/10'
-                      : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
-                  }`}
-                >
-                  {imagePreview ? (
-                    <div className="relative">
-                      <img
-                        src={imagePreview}
-                        alt="Preview"
-                        className="max-h-64 mx-auto rounded-lg"
-                      />
-                      <button
+            <div>
+              <label className="block mb-2">
+                <Text weight="semibold">Site Preview Image</Text>
+              </label>
+              <div
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={handleDrop}
+                className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                  dragActive
+                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/10'
+                    : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
+                }`}
+              >
+                {imagePreview ? (
+                  <div className="relative">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="max-h-64 mx-auto rounded-lg"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setImageFile(null);
+                        setImagePreview(null);
+                      }}
+                      className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                    >
+                      <X size={20} weight="bold" />
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    <UploadSimple size={48} className="mx-auto mb-4 text-gray-400" />
+                    <Text weight="semibold" className="mb-2">
+                      Drag and drop an image here, or click to select
+                    </Text>
+                    <Text size="sm" color="secondary" className="mb-4">
+                      Recommended: 1200x630px (16:9 aspect ratio)
+                    </Text>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => e.target.files?.[0] && handleImageChange(e.target.files[0])}
+                      className="hidden"
+                      id="image-upload"
+                    />
+                    <label htmlFor="image-upload">
+                      <Button
                         type="button"
-                        onClick={() => {
-                          setImageFile(null);
-                          setImagePreview(null);
-                        }}
-                        className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                        variant="outlined"
+                        size="sm"
+                        onClick={() => document.getElementById('image-upload')?.click()}
                       >
-                        <X size={20} weight="bold" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div>
-                      <UploadSimple size={48} className="mx-auto mb-4 text-gray-400" />
-                      <Text weight="semibold" className="mb-2">
-                        Drag and drop an image here, or click to select
-                      </Text>
-                      <Text size="sm" color="secondary" className="mb-4">
-                        Recommended: 1200x630px (16:9 aspect ratio)
-                      </Text>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => e.target.files?.[0] && handleImageChange(e.target.files[0])}
-                        className="hidden"
-                        id="image-upload"
-                      />
-                      <label htmlFor="image-upload">
-                        <Button
-                          type="button"
-                          variant="outlined"
-                          size="sm"
-                          onClick={() => document.getElementById('image-upload')?.click()}
-                        >
-                          Select Image
-                        </Button>
-                      </label>
-                    </div>
-                  )}
-                </div>
-                <Text size="sm" color="secondary" className="mt-1">
-                  Upload a custom preview image for this site
-                </Text>
+                        Select Image
+                      </Button>
+                    </label>
+                  </div>
+                )}
               </div>
-            )}
+              <Text size="sm" color="secondary" className="mt-1">
+                Upload a custom preview image for this site
+              </Text>
+            </div>
 
             <div className="flex gap-4 pt-4">
               <Button
