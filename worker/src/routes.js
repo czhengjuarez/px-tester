@@ -85,19 +85,24 @@ export async function handleAuthCallback(request, env, corsHeaders) {
     const { token, expiresAt } = await createSession(env, user.id);
     console.log('[OAuth Callback] Created session, token:', token.substring(0, 10) + '...');
     
-    // For cross-domain scenarios, pass token via URL parameter
-    // Frontend will set its own cookie from this token
+    const cookieHeader = setSessionCookie(token, expiresAt);
+    console.log('[OAuth Callback] Cookie header:', cookieHeader);
+    
+    // For cross-domain scenarios, also pass token via URL parameter
+    // Frontend will set its own cookie from this token if needed
     const redirectUrl = new URL(originDomain);
     redirectUrl.searchParams.set('auth_token', token);
     redirectUrl.searchParams.set('expires', expiresAt.toString());
     
     console.log('[OAuth Callback] Redirecting to:', redirectUrl.toString());
     
-    // Redirect back to origin domain with token in URL
+    // Redirect back to origin domain with both cookie AND URL token
+    // Cookie works for same-domain, URL token works for cross-domain
     return new Response(null, {
       status: 302,
       headers: {
         'Location': redirectUrl.toString(),
+        'Set-Cookie': cookieHeader,
         ...corsHeaders
       }
     });
