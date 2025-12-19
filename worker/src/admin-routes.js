@@ -146,8 +146,22 @@ export async function handleCreateInvite(env, user, email, corsHeaders) {
     VALUES (?, ?, ?, ?, ?, 'pending', ?, ?)
   `).bind(inviteId, inviteCode, email || null, user.id, user.name, now, expiresAt).run();
 
+  // Send email if email address is provided
+  let emailSent = false;
+  if (email) {
+    try {
+      const { sendInviteEmail } = await import('./email.js');
+      await sendInviteEmail(email, inviteCode, user.name, env);
+      emailSent = true;
+    } catch (error) {
+      console.error('Failed to send invite email:', error);
+      // Don't fail the whole request if email fails
+    }
+  }
+
   return new Response(JSON.stringify({ 
     success: true,
+    emailSent,
     invite: {
       id: inviteId,
       code: inviteCode,

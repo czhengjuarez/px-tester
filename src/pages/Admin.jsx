@@ -214,6 +214,17 @@ export default function Admin() {
         throw new Error('Failed to create invite')
       }
       
+      const data = await response.json()
+      
+      // Show success message
+      if (data.emailSent) {
+        alert(`Invite created and email sent to ${inviteEmail}!`)
+      } else if (inviteEmail) {
+        alert(`Invite created but email failed to send. You can copy the link manually.`)
+      } else {
+        alert('Invite link created! Copy it to share.')
+      }
+      
       setInviteEmail('')
       fetchInvites()
     } catch (err) {
@@ -542,17 +553,19 @@ export default function Admin() {
               <form onSubmit={handleCreateInvite} className="flex gap-4">
                 <input
                   type="email"
-                  placeholder="Email (optional)"
+                  placeholder="Enter email address"
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                   className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-500"
                 />
                 <Button type="submit" variant="primary">
-                  Generate Invite
+                  {inviteEmail ? 'Send Invite Email' : 'Generate Link'}
                 </Button>
               </form>
               <Text color="secondary" size="sm" className="mt-2">
-                Leave email blank to create a generic invite link that anyone can use
+                {inviteEmail 
+                  ? '✉️ An invitation email will be sent to this address with the invite link'
+                  : 'Enter an email to send an invitation, or leave blank to generate a shareable link'}
               </Text>
             </Surface>
 
