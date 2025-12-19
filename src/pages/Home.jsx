@@ -9,7 +9,7 @@ import { featuredSites } from '../data/mockSites'
 import { useAuth } from '../contexts/AuthContext'
 
 export default function Home() {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, login } = useAuth()
   const [recentSites, setRecentSites] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -73,11 +73,20 @@ export default function Home() {
                   Browse Catalog
                 </button>
               </Link>
-              <Link to="/submit">
-                <button className="px-6 py-3 bg-transparent text-white font-semibold rounded-lg border-2 border-white hover:bg-white hover:text-gray-900 transition-colors">
-                  {isAuthenticated ? 'Submit Your Site' : 'Log in to Submit Your Site'}
+              {isAuthenticated ? (
+                <Link to="/submit">
+                  <button className="px-6 py-3 bg-transparent text-white font-semibold rounded-lg border-2 border-white hover:bg-white hover:text-gray-900 transition-colors">
+                    Submit Your Site
+                  </button>
+                </Link>
+              ) : (
+                <button 
+                  onClick={login}
+                  className="px-6 py-3 bg-transparent text-white font-semibold rounded-lg border-2 border-white hover:bg-white hover:text-gray-900 transition-colors"
+                >
+                  Log in to Submit Your Site
                 </button>
-              </Link>
+              )}
             </div>
           </div>
         </div>
