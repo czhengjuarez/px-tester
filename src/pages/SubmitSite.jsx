@@ -5,17 +5,6 @@ import { UploadSimple } from '@phosphor-icons/react/dist/csr/UploadSimple';
 import { X } from '@phosphor-icons/react/dist/csr/X';
 import { useAuth } from '../contexts/AuthContext';
 
-const categories = [
-  { id: 'saas', name: 'SaaS' },
-  { id: 'portfolio', name: 'Portfolio' },
-  { id: 'ecommerce', name: 'E-commerce' },
-  { id: 'blog', name: 'Blog' },
-  { id: 'agency', name: 'Agency' },
-  { id: 'productivity', name: 'Productivity' },
-  { id: 'design', name: 'Design' },
-  { id: 'development', name: 'Development' }
-];
-
 export default function SubmitSite() {
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
@@ -27,22 +16,45 @@ export default function SubmitSite() {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [dragActive, setDragActive] = useState(false);
+  const [categories, setCategories] = useState([]);
   const [formData, setFormData] = useState({
     name: '',
     url: '',
     short_description: '',
     description: '',
-    category: 'saas',
+    category: '',
     tags: ''
   });
 
   const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
 
   useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
     if (editId && isAuthenticated) {
       fetchSiteData();
     }
   }, [editId, isAuthenticated]);
+
+  const fetchCategories = async () => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api';
+      const response = await fetch(`${API_URL}/categories`);
+      const data = await response.json();
+      setCategories(data.categories || []);
+      
+      // Set default category to first one's slug if not editing
+      if (!editId && data.categories?.length > 0) {
+        setFormData(prev => ({ ...prev, category: data.categories[0].slug }));
+      }
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
+      // Fallback to empty array if fetch fails
+      setCategories([]);
+    }
+  };
 
   // Add paste event listener for clipboard images
   useEffect(() => {
@@ -309,7 +321,7 @@ export default function SubmitSite() {
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 {categories.map(cat => (
-                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  <option key={cat.id} value={cat.slug}>{cat.name}</option>
                 ))}
               </select>
             </div>
