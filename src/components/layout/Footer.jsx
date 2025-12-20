@@ -19,7 +19,7 @@ export default function Footer() {
             </Link>
           </div>
           <Text color="secondary" size="xs">
-            © {currentYear} PX LAB. Built with Cloudflare Workers AI.
+            © {currentYear} PX LAB. Built with Cloudflare products.
           </Text>
         </div>
       </div>
