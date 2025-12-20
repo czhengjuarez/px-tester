@@ -64,6 +64,12 @@ export default function SiteDetail() {
     if (isLiking) return
     
     setIsLiking(true)
+    const newLikedState = !liked
+    const newCount = newLikedState ? likeCount + 1 : likeCount - 1
+    
+    // Optimistic update
+    setLiked(newLikedState)
+    setLikeCount(newCount)
     
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
@@ -74,14 +80,20 @@ export default function SiteDetail() {
       
       if (response.ok) {
         const data = await response.json()
-        // Update with server response only
+        // Update with actual count and liked state from server
         setLikeCount(data.likes)
         setLiked(data.liked)
         // Update lastSiteId to prevent useEffect from resetting
         lastSiteId.current = id
+      } else {
+        // Revert on error
+        setLiked(!newLikedState)
+        setLikeCount(likeCount)
       }
     } catch (error) {
-      console.error('Like error:', error)
+      // Revert on error
+      setLiked(!newLikedState)
+      setLikeCount(likeCount)
     } finally {
       setIsLiking(false)
     }
