@@ -19,12 +19,15 @@ export default function SiteDetail() {
   const [isLiking, setIsLiking] = useState(false)
   const lastSiteId = useRef(null)
 
-  // Initialize like count and liked state from site data when site changes
+  // Initialize like count and liked state from site data when site changes or loads
   useEffect(() => {
-    if (data?.site && data.site.id !== lastSiteId.current) {
-      setLikeCount(data.site.likes || 0)
-      setLiked(data.site.liked || false)
-      lastSiteId.current = data.site.id
+    if (data?.site) {
+      // Always update if site ID changed, or if this is initial load
+      if (data.site.id !== lastSiteId.current) {
+        setLikeCount(data.site.likes || 0)
+        setLiked(data.site.liked || false)
+        lastSiteId.current = data.site.id
+      }
     }
   }, [data])
 

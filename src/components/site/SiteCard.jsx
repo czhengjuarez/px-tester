@@ -6,17 +6,20 @@ import { Eye } from '@phosphor-icons/react/dist/csr/Eye'
 
 export default function SiteCard({ site }) {
   const navigate = useNavigate()
-  const [liked, setLiked] = useState(site.liked || false)
-  const [likeCount, setLikeCount] = useState(site.likes || 0)
+  const [liked, setLiked] = useState(false)
+  const [likeCount, setLikeCount] = useState(0)
   const [isProcessing, setIsProcessing] = useState(false)
   const lastSiteId = useRef(null)
 
-  // Update state when site prop changes
+  // Update state when site prop changes or loads
   useEffect(() => {
-    if (site && site.id !== lastSiteId.current) {
-      setLikeCount(site.likes || 0)
-      setLiked(site.liked || false)
-      lastSiteId.current = site.id
+    if (site) {
+      // Always update if site ID changed, or if this is initial load
+      if (site.id !== lastSiteId.current) {
+        setLikeCount(site.likes || 0)
+        setLiked(site.liked || false)
+        lastSiteId.current = site.id
+      }
     }
   }, [site])
   const formatNumber = (num) => {
