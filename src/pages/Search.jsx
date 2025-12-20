@@ -123,17 +123,7 @@ export default function Search() {
               </div>
             )}
           </div>
-        ) : (
-          <div className="text-center py-20">
-            <div className="text-6xl mb-4">✨</div>
-            <Text size="xl" weight="semibold" className="mb-2">
-              Start searching
-            </Text>
-            <Text color="secondary">
-              Enter a query above to find websites powered by AI
-            </Text>
-          </div>
-        )}
+        ) : null}
       </div>
     </div>
   )
