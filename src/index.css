@@ -1,11 +1,5 @@
 @import 'tailwindcss';
 
-@theme {
-  --color-*: initial;
-  --font-*: initial;
-  --breakpoint-*: initial;
-}
-
 @variant dark (&:where(.dark, .dark *));
 
 @import '@cloudflare/kumo/styles';
@@ -43,11 +37,11 @@ body {
 
 /* Dotted pattern background */
 .dotted-pattern {
-  background-image: radial-gradient(circle, rgba(148, 163, 184, 0.15) 1px, transparent 1px);
-  background-size: 24px 24px;
+  background-image: radial-gradient(circle, rgba(148, 163, 184, 0.15) 1px, transparent 1px) !important;
+  background-size: 24px 24px !important;
 }
 
 .dark .dotted-pattern {
-  background-image: radial-gradient(circle, rgba(148, 163, 184, 0.1) 1px, transparent 1px);
-  background-size: 24px 24px;
+  background-image: radial-gradient(circle, rgba(148, 163, 184, 0.1) 1px, transparent 1px) !important;
+  background-size: 24px 24px !important;
 }
