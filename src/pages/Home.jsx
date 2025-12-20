@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Button, Text, Badge } from '@cloudflare/kumo'
 import { MagnifyingGlass } from '@phosphor-icons/react/dist/csr/MagnifyingGlass'
 import { TrendUp } from '@phosphor-icons/react/dist/csr/TrendUp'
@@ -8,9 +8,11 @@ import { useAuth } from '../contexts/AuthContext'
 
 export default function Home() {
   const { isAuthenticated, login } = useAuth()
+  const navigate = useNavigate()
   const [featuredSites, setFeaturedSites] = useState([])
   const [recentSites, setRecentSites] = useState([])
   const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     fetchFeaturedSites()
@@ -62,15 +64,24 @@ export default function Home() {
 
             {/* Search Bar */}
             <div className="max-w-2xl mx-auto mb-6">
-              <Link to="/search">
-                <div className="flex items-center gap-3 bg-white dark:bg-gray-800 rounded-xl p-4 hover:shadow-lg transition-shadow cursor-pointer border border-gray-300 dark:border-gray-700 shadow-sm">
+              <form onSubmit={(e) => {
+                e.preventDefault()
+                if (searchQuery.trim()) {
+                  navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
+                }
+              }}>
+                <div className="flex items-center gap-3 bg-white dark:bg-gray-800 rounded-xl p-4 hover:shadow-lg transition-shadow border border-gray-300 dark:border-gray-700 shadow-sm">
                   <MagnifyingGlass size={24} className="text-gray-400 dark:text-gray-400" />
-                  <span className="flex-1 text-left text-gray-500 dark:text-gray-400">
-                    Search for websites, tools, inspiration...
-                  </span>
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search for websites, tools, inspiration..."
+                    className="flex-1 bg-transparent text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 outline-none"
+                  />
                   <Badge variant="info" size="sm">AI</Badge>
                 </div>
-              </Link>
+              </form>
             </div>
 
             {/* CTA Buttons */}
