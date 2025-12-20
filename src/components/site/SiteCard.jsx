@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Surface, Text, Badge } from '@cloudflare/kumo'
 import { Heart } from '@phosphor-icons/react/dist/csr/Heart'
@@ -6,9 +6,19 @@ import { Eye } from '@phosphor-icons/react/dist/csr/Eye'
 
 export default function SiteCard({ site }) {
   const navigate = useNavigate()
-  const [liked, setLiked] = useState(false)
+  const [liked, setLiked] = useState(site.liked || false)
   const [likeCount, setLikeCount] = useState(site.likes || 0)
   const [isProcessing, setIsProcessing] = useState(false)
+  const lastSiteId = useRef(null)
+
+  // Update state when site prop changes
+  useEffect(() => {
+    if (site && site.id !== lastSiteId.current) {
+      setLikeCount(site.likes || 0)
+      setLiked(site.liked || false)
+      lastSiteId.current = site.id
+    }
+  }, [site])
   const formatNumber = (num) => {
     if (num >= 1000) {
       return `${(num / 1000).toFixed(1)}k`
@@ -37,7 +47,14 @@ export default function SiteCard({ site }) {
         credentials: 'include'
       })
       
-      if (!response.ok) {
+      if (response.ok) {
+        const data = await response.json()
+        // Update with actual count and liked state from server
+        setLikeCount(data.likes)
+        setLiked(data.liked)
+        // Update lastSiteId to prevent useEffect from resetting
+        lastSiteId.current = site.id
+      } else {
         // Revert on error
         setLiked(!newLikedState)
         setLikeCount(likeCount)

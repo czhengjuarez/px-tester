@@ -82,7 +82,7 @@ export default {
 
       // Sites routes
       if (url.pathname === '/api/sites' && request.method === 'GET') {
-        return handleGetSites(request, env, corsHeaders);
+        return handleGetSites(request, env, user, corsHeaders);
       }
 
       if (url.pathname === '/api/sites' && request.method === 'POST') {

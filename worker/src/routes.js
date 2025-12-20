@@ -508,7 +508,7 @@ export async function handleDeleteSite(env, user, id, corsHeaders) {
   });
 }
 
-export async function handleGetSites(request, env, corsHeaders) {
+export async function handleGetSites(request, env, user, corsHeaders) {
   const url = new URL(request.url);
   const category = url.searchParams.get('category');
   const featured = url.searchParams.get('featured');
@@ -558,9 +558,23 @@ export async function handleGetSites(request, env, corsHeaders) {
   }
   const { total } = await env.DB.prepare(countQuery).bind(...countParams).first();
 
+  // Check which sites the user has liked
+  let userLikes = new Set();
+  if (user) {
+    const siteIds = results.map(s => s.id);
+    if (siteIds.length > 0) {
+      const placeholders = siteIds.map(() => '?').join(',');
+      const { results: likes } = await env.DB.prepare(
+        `SELECT site_id FROM user_likes WHERE user_id = ? AND site_id IN (${placeholders})`
+      ).bind(user.id, ...siteIds).all();
+      userLikes = new Set(likes.map(l => l.site_id));
+    }
+  }
+
   const sites = results.map(site => ({
     ...site,
-    tags: site.tags ? JSON.parse(site.tags) : []
+    tags: site.tags ? JSON.parse(site.tags) : [],
+    liked: userLikes.has(site.id)
   }));
 
   return new Response(JSON.stringify({
