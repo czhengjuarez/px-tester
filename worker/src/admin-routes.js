@@ -250,14 +250,20 @@ export async function handleCreateInvite(env, user, email, corsHeaders) {
   // Send email if email address is provided
   let emailSent = false;
   if (email) {
+    console.log('[Invite] Email provided, attempting to send invite email to:', email);
     try {
       const { sendInviteEmail } = await import('./email.js');
+      console.log('[Invite] Calling sendInviteEmail function...');
       await sendInviteEmail(email, inviteCode, user.name, env);
       emailSent = true;
+      console.log('[Invite] Email sent successfully, emailSent flag set to true');
     } catch (error) {
-      console.error('Failed to send invite email:', error);
+      console.error('[Invite] Failed to send invite email:', error.message);
+      console.error('[Invite] Full error:', error);
       // Don't fail the whole request if email fails
     }
+  } else {
+    console.log('[Invite] No email provided, skipping email send');
   }
 
   return new Response(JSON.stringify({ 

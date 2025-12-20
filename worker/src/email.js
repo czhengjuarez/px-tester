@@ -1,4 +1,8 @@
 export async function sendInviteEmail(email, inviteCode, inviterName, env) {
+  console.log('[Email] Sending invite to:', email);
+  console.log('[Email] Invite code:', inviteCode);
+  console.log('[Email] Frontend URL:', env.FRONTEND_URL);
+  
   const inviteUrl = `${env.FRONTEND_URL}/invite/${inviteCode}`;
   
   const emailContent = {
@@ -71,6 +75,7 @@ The PX Tester Team`
   };
 
   try {
+    console.log('[Email] Sending to MailChannels API...');
     const response = await fetch('https://api.mailchannels.net/tx/v1/send', {
       method: 'POST',
       headers: {
@@ -79,15 +84,22 @@ The PX Tester Team`
       body: JSON.stringify(emailContent)
     });
 
+    console.log('[Email] MailChannels response status:', response.status);
+    
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('MailChannels error:', errorText);
-      throw new Error(`Failed to send email: ${response.status}`);
+      console.error('[Email] MailChannels error response:', errorText);
+      throw new Error(`Failed to send email: ${response.status} - ${errorText}`);
     }
+
+    const responseData = await response.text();
+    console.log('[Email] MailChannels success response:', responseData);
+    console.log('[Email] Email sent successfully to:', email);
 
     return { success: true };
   } catch (error) {
-    console.error('Email send error:', error);
+    console.error('[Email] Email send error:', error.message);
+    console.error('[Email] Full error:', error);
     throw error;
   }
 }
