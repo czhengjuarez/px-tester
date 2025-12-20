@@ -237,19 +237,19 @@ export default function SiteDetail() {
             <Surface className="p-6 sticky top-24">
               <Text weight="bold" className="mb-4">Quick Actions</Text>
               
-              <div className="space-y-3">
+              <div className="flex gap-2">
                 <Button 
                   variant="outlined" 
-                  className="w-full justify-center"
+                  className="flex-1 justify-center"
                   onClick={handleLike}
                   disabled={isLiking}
                 >
                   <Heart size={20} weight={liked ? 'fill' : 'regular'} className={liked ? 'text-red-500' : ''} />
-                  {liked ? 'Liked' : 'Like this site'}
+                  {liked ? 'Liked' : 'Like'}
                 </Button>
                 <Button 
                   variant="outlined" 
-                  className="w-full justify-center"
+                  className="flex-1 justify-center"
                   onClick={handleShare}
                 >
                   <ShareNetwork size={20} />
