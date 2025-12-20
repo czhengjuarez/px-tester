@@ -73,7 +73,13 @@ export default function SiteDetail() {
         credentials: 'include'
       })
       
-      if (!response.ok) {
+      if (response.ok) {
+        const data = await response.json()
+        // Update with actual count from server
+        setLikeCount(data.likes)
+        // Refetch site data to ensure consistency
+        refetch()
+      } else {
         // Revert on error
         setLiked(!newLikedState)
         setLikeCount(likeCount)
@@ -175,18 +181,14 @@ export default function SiteDetail() {
 
               {/* Stats */}
               <div className="flex items-center gap-6 text-gray-600 dark:text-gray-400">
-                <button 
-                  onClick={handleLike}
-                  disabled={isLiking}
-                  className="flex items-center gap-2 hover:scale-105 transition-transform cursor-pointer"
-                >
+                <div className="flex items-center gap-2">
                   <Heart 
                     size={20} 
                     weight={liked ? "fill" : "regular"} 
-                    className={liked ? "text-red-500" : "text-gray-400 hover:text-red-500"} 
+                    className={liked ? "text-red-500" : "text-gray-400"} 
                   />
                   <Text className={liked ? "text-red-500 font-semibold" : ""}>{likeCount.toLocaleString()} likes</Text>
-                </button>
+                </div>
                 <div className="flex items-center gap-2">
                   <Eye size={20} />
                   <Text>{site.views.toLocaleString()} views</Text>
