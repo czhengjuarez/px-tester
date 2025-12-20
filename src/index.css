@@ -1,4 +1,13 @@
 @import 'tailwindcss';
+
+@theme {
+  --color-*: initial;
+  --font-*: initial;
+  --breakpoint-*: initial;
+}
+
+@variant dark (&:where(.dark, .dark *));
+
 @import '@cloudflare/kumo/styles';
 
 :root {
