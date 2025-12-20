@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard'
 import SubmitSite from './pages/SubmitSite'
 import Admin from './pages/Admin'
 import Search from './pages/Search'
+import About from './pages/About'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
               <Route path="/browse" element={<Browse />} />
               <Route path="/site/:id" element={<SiteDetail />} />
               <Route path="/search" element={<Search />} />
+              <Route path="/about" element={<About />} />
               <Route 
                 path="/submit" 
                 element={
