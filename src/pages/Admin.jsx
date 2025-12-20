@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Text, Button, Surface, Badge } from '@cloudflare/kumo'
 import { Check } from '@phosphor-icons/react/dist/csr/Check'
 import { X } from '@phosphor-icons/react/dist/csr/X'
@@ -10,7 +10,9 @@ import { LoadingSpinner, ErrorMessage } from '../components/common/LoadingStates
 
 export default function Admin() {
   const { user } = useAuth()
-  const [activeTab, setActiveTab] = useState('sites')
+  const [searchParams] = useSearchParams()
+  const tabParam = searchParams.get('tab')
+  const [activeTab, setActiveTab] = useState(tabParam || 'sites')
   const [pendingSites, setPendingSites] = useState([])
   const [allSites, setAllSites] = useState([])
   const [users, setUsers] = useState([])

@@ -218,7 +218,12 @@ export default function SubmitSite() {
         throw new Error(errorMsg);
       }
 
-      navigate('/dashboard');
+      // Redirect super_admin to Admin manage sites page after editing, others to dashboard
+      if (editId && user?.role === 'super_admin') {
+        navigate('/admin?tab=manage');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -422,7 +427,14 @@ export default function SubmitSite() {
               <Button
                 type="button"
                 variant="outlined"
-                onClick={() => navigate('/dashboard')}
+                onClick={() => {
+                  // Redirect super_admin to Admin manage sites page when canceling edit, others to dashboard
+                  if (editId && user?.role === 'super_admin') {
+                    navigate('/admin?tab=manage');
+                  } else {
+                    navigate('/dashboard');
+                  }
+                }}
                 disabled={loading}
               >
                 Cancel
