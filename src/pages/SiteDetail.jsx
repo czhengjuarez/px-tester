@@ -8,12 +8,15 @@ import { Calendar } from '@phosphor-icons/react/dist/csr/Calendar';
 import { Heart } from '@phosphor-icons/react/dist/csr/Heart';
 import { Eye } from '@phosphor-icons/react/dist/csr/Eye';
 import { ShareNetwork } from '@phosphor-icons/react/dist/csr/ShareNetwork';
+import { Pencil } from '@phosphor-icons/react/dist/csr/Pencil';
 import { LoadingSpinner, ErrorMessage } from '../components/common/LoadingStates';
 import SiteCard from '../components/site/SiteCard';
-import { useSite } from '../hooks/useSites'
+import { useSite } from '../hooks/useSites';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function SiteDetail() {
   const { id } = useParams()
+  const { user } = useAuth()
   const { data, isLoading, isError, error, refetch } = useSite(id)
   const [liked, setLiked] = useState(false)
   const [likeCount, setLikeCount] = useState(0)
@@ -164,12 +167,22 @@ export default function SiteDetail() {
                     <Text size="lg">{site.url}</Text>
                   </a>
                 </div>
-                <a href={site.url} target="_blank" rel="noopener noreferrer">
-                  <Button variant="primary" size="lg">
-                    <ArrowUpRight size={20} weight="bold" />
-                    Visit Site
-                  </Button>
-                </a>
+                <div className="flex gap-2">
+                  {user && (user.role === 'super_admin' || user.role === 'admin' || site.user_id === user.id) && (
+                    <Link to={`/submit?edit=${site.id}`}>
+                      <Button variant="outlined" size="lg">
+                        <Pencil size={20} />
+                        Edit
+                      </Button>
+                    </Link>
+                  )}
+                  <a href={site.url} target="_blank" rel="noopener noreferrer">
+                    <Button variant="primary" size="lg">
+                      <ArrowUpRight size={20} weight="bold" />
+                      Visit Site
+                    </Button>
+                  </a>
+                </div>
               </div>
 
               {/* Tags */}

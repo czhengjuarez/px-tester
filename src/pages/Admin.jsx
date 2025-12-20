@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { Text, Button, Surface, Badge } from '@cloudflare/kumo'
 import { Check } from '@phosphor-icons/react/dist/csr/Check'
 import { X } from '@phosphor-icons/react/dist/csr/X'
@@ -703,6 +704,11 @@ export default function Admin() {
                                 Reject
                               </Button>
                             )}
+                            <Link to={`/submit?edit=${site.id}`}>
+                              <Button variant="outlined" size="sm">
+                                Edit
+                              </Button>
+                            </Link>
                             <a href={`/site/${site.id}`} target="_blank" rel="noopener noreferrer">
                               <Button variant="outlined" size="sm">
                                 View

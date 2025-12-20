@@ -1,9 +1,8 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Surface, Text, Badge } from '@cloudflare/kumo'
 import { Heart } from '@phosphor-icons/react/dist/csr/Heart'
 import { Eye } from '@phosphor-icons/react/dist/csr/Eye'
-import { ArrowUpRight } from '@phosphor-icons/react/dist/csr/ArrowUpRight'
 
 export default function SiteCard({ site }) {
   const navigate = useNavigate()
