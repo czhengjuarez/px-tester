@@ -121,6 +121,54 @@ export default {
         return handleSearch(request, env, corsHeaders);
       }
 
+      // Backfill embeddings (admin only, one-time use)
+      if (url.pathname === '/api/admin/backfill-embeddings' && request.method === 'POST') {
+        if (!user || user.role !== 'super_admin') {
+          return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+            status: 403,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+
+        try {
+          const { upsertSiteEmbedding } = await import('./embeddings.js');
+          
+          const { results: sites } = await env.DB.prepare(`
+            SELECT id, name, url, short_description as tagline, description, 
+                   category as category_id, tags, thumbnail_url as image_url
+            FROM sites 
+            WHERE status = 'approved'
+            ORDER BY id
+          `).all();
+          
+          const results = { total: sites.length, success: 0, failed: 0, errors: [] };
+          
+          for (const site of sites) {
+            try {
+              const success = await upsertSiteEmbedding(site, env);
+              if (success) {
+                results.success++;
+              } else {
+                results.failed++;
+                results.errors.push({ id: site.id, name: site.name });
+              }
+            } catch (error) {
+              results.failed++;
+              results.errors.push({ id: site.id, name: site.name, error: error.message });
+            }
+          }
+          
+          return new Response(JSON.stringify(results), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        } catch (error) {
+          return new Response(JSON.stringify({ error: error.message }), {
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+      }
+
       // Invite routes
       if (url.pathname.match(/^\/api\/invites\/[^/]+$/) && request.method === 'GET') {
         const code = url.pathname.split('/')[3];

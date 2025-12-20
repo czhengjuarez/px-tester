@@ -19,6 +19,8 @@ export default function Admin() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [processingId, setProcessingId] = useState(null)
+  const [backfillStatus, setBackfillStatus] = useState(null)
+  const [backfillLoading, setBackfillLoading] = useState(false)
 
   useEffect(() => {
     if (activeTab === 'sites') {
@@ -237,7 +239,7 @@ export default function Admin() {
   }
 
   const handleDeleteUser = async (userId) => {
-    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+    if (!window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
       return
     }
 
@@ -248,17 +250,57 @@ export default function Admin() {
         method: 'DELETE',
         credentials: 'include'
       })
-      
-      if (!response.ok) {
-        throw new Error('Failed to delete user')
+
+      if (response.ok) {
+        await fetchUsers()
+      } else {
+        const data = await response.json()
+        alert(data.error || 'Failed to delete user')
       }
-      
-      // Refresh users list
-      fetchUsers()
-    } catch (err) {
-      setError(err.message)
+    } catch (error) {
+      console.error('Delete user error:', error)
+      alert('Failed to delete user')
     } finally {
       setProcessingId(null)
+    }
+  }
+
+  const handleBackfillEmbeddings = async () => {
+    if (!window.confirm('This will generate AI embeddings for all approved sites. This may take a few minutes. Continue?')) {
+      return
+    }
+
+    try {
+      setBackfillLoading(true)
+      setBackfillStatus(null)
+      const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
+      const response = await fetch(`${API_URL}/admin/backfill-embeddings`, {
+        method: 'POST',
+        credentials: 'include'
+      })
+
+      const data = await response.json()
+      
+      if (response.ok) {
+        setBackfillStatus({
+          success: true,
+          message: `Successfully generated embeddings for ${data.success} sites. Failed: ${data.failed}`,
+          data
+        })
+      } else {
+        setBackfillStatus({
+          success: false,
+          message: data.error || 'Failed to backfill embeddings'
+        })
+      }
+    } catch (error) {
+      console.error('Backfill error:', error)
+      setBackfillStatus({
+        success: false,
+        message: 'Failed to backfill embeddings'
+      })
+    } finally {
+      setBackfillLoading(false)
     }
   }
 
@@ -284,12 +326,35 @@ export default function Admin() {
       <div className="max-w-6xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
-          <Text as="h1" size="4xl" weight="bold" className="mb-2">
-            Admin Panel
-          </Text>
-          <Text color="secondary">
-            Manage site submissions and users
-          </Text>
+          <div className="flex items-center justify-between">
+            <div>
+              <Text as="h1" size="4xl" weight="bold" className="mb-2">
+                Admin Panel
+              </Text>
+              <Text color="secondary">
+                Manage site submissions and users
+              </Text>
+            </div>
+            {user.role === 'super_admin' && (
+              <Button 
+                onClick={handleBackfillEmbeddings}
+                disabled={backfillLoading}
+                variant="secondary"
+              >
+                {backfillLoading ? 'Generating Embeddings...' : 'Backfill Search Embeddings'}
+              </Button>
+            )}
+          </div>
+          {backfillStatus && (
+            <div className={`mt-4 p-4 rounded-lg ${backfillStatus.success ? 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200' : 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200'}`}>
+              <Text>{backfillStatus.message}</Text>
+              {backfillStatus.data && (
+                <Text size="sm" className="mt-2">
+                  Total: {backfillStatus.data.total} | Success: {backfillStatus.data.success} | Failed: {backfillStatus.data.failed}
+                </Text>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Tabs */}
