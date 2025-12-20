@@ -178,16 +178,17 @@ export default function SiteDetail() {
 
               {/* Stats */}
               <div className="flex items-center gap-6 text-gray-600 dark:text-gray-400">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2" role="img" aria-label={`${likeCount.toLocaleString()} likes`}>
                   <Heart 
                     size={20} 
                     weight={liked ? "fill" : "regular"} 
-                    className={liked ? "text-red-500" : "text-gray-400"} 
+                    className={liked ? "text-red-500" : "text-gray-400"}
+                    aria-hidden="true"
                   />
                   <Text className={liked ? "text-red-500 font-semibold" : ""}>{likeCount.toLocaleString()} likes</Text>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Eye size={20} />
+                <div className="flex items-center gap-2" role="img" aria-label={`${site.views.toLocaleString()} views`}>
+                  <Eye size={20} aria-hidden="true" />
                   <Text>{site.views.toLocaleString()} views</Text>
                 </div>
                 <div className="flex items-center gap-2">

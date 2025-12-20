@@ -140,10 +140,10 @@ export default function SiteCard({ site }) {
                 <Heart size={16} weight={liked ? 'fill' : 'regular'} className="flex-shrink-0" aria-hidden="true" />
                 <Text size="sm" className="leading-none">{formatNumber(likeCount)}</Text>
               </button>
-              <div className="flex items-center gap-1.5" aria-label={`${formatNumber(site.views)} views`}>
+              <span className="flex items-center gap-1.5" role="img" aria-label={`${formatNumber(site.views)} views`}>
                 <Eye size={16} className="flex-shrink-0" aria-hidden="true" />
                 <Text size="sm" className="leading-none">{formatNumber(site.views)}</Text>
-              </div>
+              </span>
             </div>
           </div>
         </div>
