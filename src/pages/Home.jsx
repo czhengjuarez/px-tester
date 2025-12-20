@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Button, Text, Badge } from '@cloudflare/kumo'
 import { MagnifyingGlass } from '@phosphor-icons/react/dist/csr/MagnifyingGlass'
-import { Sparkle } from '@phosphor-icons/react/dist/csr/Sparkle'
 import { TrendUp } from '@phosphor-icons/react/dist/csr/TrendUp'
 import SiteCard from '../components/site/SiteCard'
 import { useAuth } from '../contexts/AuthContext'
@@ -52,14 +51,6 @@ export default function Home() {
       <section className="bg-gray-900 py-20 dotted-pattern">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 bg-white dark:bg-gray-800 rounded-full px-4 py-2 mb-6 border border-gray-300 dark:border-gray-700 shadow-sm">
-              <Sparkle size={20} weight="fill" className="text-orange-500" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Powered by Cloudflare Workers AI
-              </span>
-            </div>
-
             {/* Heading */}
             <h1 className="text-5xl md:text-6xl font-bold mb-6 text-white">
               Our Living Catalog of &quot;What If?&quot;

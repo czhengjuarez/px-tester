@@ -44,6 +44,27 @@ export default function SubmitSite() {
     }
   }, [editId, isAuthenticated]);
 
+  // Add paste event listener for clipboard images
+  useEffect(() => {
+    const handlePaste = (e) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const file = items[i].getAsFile();
+          if (file) {
+            handleImageChange(file);
+            e.preventDefault();
+          }
+        }
+      }
+    };
+
+    document.addEventListener('paste', handlePaste);
+    return () => document.removeEventListener('paste', handlePaste);
+  }, []);
+
   const fetchSiteData = async () => {
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
@@ -341,7 +362,7 @@ export default function SubmitSite() {
                   <div>
                     <UploadSimple size={48} className="mx-auto mb-4 text-gray-400" />
                     <Text weight="semibold" className="mb-2">
-                      Drag and drop an image here, or click to select
+                      Drag and drop, paste, or click to select an image
                     </Text>
                     <Text size="sm" color="secondary" className="mb-4">
                       Recommended: 1200x630px (16:9 aspect ratio)
