@@ -21,6 +21,10 @@ export default function Admin() {
   const [processingId, setProcessingId] = useState(null)
   const [backfillStatus, setBackfillStatus] = useState(null)
   const [backfillLoading, setBackfillLoading] = useState(false)
+  const [categories, setCategories] = useState([])
+  const [newCategoryName, setNewCategoryName] = useState('')
+  const [newCategoryDescription, setNewCategoryDescription] = useState('')
+  const [categoryLoading, setCategoryLoading] = useState(false)
 
   useEffect(() => {
     if (activeTab === 'sites') {
@@ -39,6 +43,8 @@ export default function Admin() {
       }, 500)
       
       return () => clearTimeout(timeoutId)
+    } else if (activeTab === 'categories') {
+      fetchCategories()
     }
   }, [activeTab, searchQuery, siteSearchQuery, statusFilter])
 
@@ -304,6 +310,60 @@ export default function Admin() {
     }
   }
 
+  const fetchCategories = async () => {
+    try {
+      setLoading(true)
+      const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
+      const response = await fetch(`${API_URL}/categories`)
+      const data = await response.json()
+      setCategories(data.categories || [])
+    } catch (error) {
+      console.error('Fetch categories error:', error)
+      setError('Failed to load categories')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCreateCategory = async (e) => {
+    e.preventDefault()
+    
+    if (!newCategoryName.trim()) {
+      alert('Category name is required')
+      return
+    }
+
+    try {
+      setCategoryLoading(true)
+      const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
+      const response = await fetch(`${API_URL}/categories`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newCategoryName.trim(),
+          description: newCategoryDescription.trim() || null
+        })
+      })
+
+      const data = await response.json()
+      
+      if (response.ok) {
+        setNewCategoryName('')
+        setNewCategoryDescription('')
+        await fetchCategories()
+        alert('Category created successfully!')
+      } else {
+        alert(data.error || 'Failed to create category')
+      }
+    } catch (error) {
+      console.error('Create category error:', error)
+      alert('Failed to create category')
+    } finally {
+      setCategoryLoading(false)
+    }
+  }
+
 
   if (loading) {
     return (
@@ -391,6 +451,18 @@ export default function Admin() {
           >
             Users
           </button>
+          {user.role === 'super_admin' && (
+            <button
+              onClick={() => setActiveTab('categories')}
+              className={`px-4 py-2 font-medium transition-colors border-b-2 ${
+                activeTab === 'categories'
+                  ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+              }`}
+            >
+              Categories
+            </button>
+          )}
         </div>
 
         {/* Stats */}
@@ -750,6 +822,88 @@ export default function Admin() {
                 ))}
               </div>
             )}
+          </>
+        )}
+
+        {/* Categories Tab */}
+        {activeTab === 'categories' && (
+          <>
+            {/* Create Category Form */}
+            <Surface className="p-6 mb-6">
+              <Text as="h2" size="xl" weight="bold" className="mb-4">
+                Create New Category
+              </Text>
+              <form onSubmit={handleCreateCategory} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                    Category Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    placeholder="e.g., AI Tools, Design, Development"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                    Description (Optional)
+                  </label>
+                  <textarea
+                    value={newCategoryDescription}
+                    onChange={(e) => setNewCategoryDescription(e.target.value)}
+                    placeholder="Brief description of this category..."
+                    rows={3}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <Button type="submit" variant="primary" disabled={categoryLoading}>
+                  {categoryLoading ? 'Creating...' : 'Create Category'}
+                </Button>
+              </form>
+            </Surface>
+
+            {/* Categories List */}
+            <Surface className="p-6">
+              <Text as="h2" size="xl" weight="bold" className="mb-4">
+                Existing Categories
+              </Text>
+              {categories.length === 0 ? (
+                <Text color="secondary" className="text-center py-8">
+                  No categories found
+                </Text>
+              ) : (
+                <div className="space-y-3">
+                  {categories.map((category) => (
+                    <div
+                      key={category.id}
+                      className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <Text weight="semibold" className="mb-1">
+                            {category.name}
+                          </Text>
+                          {category.description && (
+                            <Text color="secondary" size="sm">
+                              {category.description}
+                            </Text>
+                          )}
+                          <Text color="secondary" size="xs" className="mt-1">
+                            Slug: {category.slug}
+                          </Text>
+                        </div>
+                        <Badge variant="secondary" size="sm">
+                          ID: {category.id}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Surface>
           </>
         )}
 
