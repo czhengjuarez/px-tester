@@ -1,26 +1,37 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Text, Button } from '@cloudflare/kumo'
 import { Faders } from '@phosphor-icons/react/dist/csr/Faders'
 import SiteCard from '../components/site/SiteCard'
 import { LoadingGrid, ErrorMessage, EmptyState } from '../components/common/LoadingStates'
 import { useSites } from '../hooks/useSites'
 
-const categories = [
-  { id: 'all', name: 'All Sites' },
-  { id: 'saas', name: 'SaaS' },
-  { id: 'portfolio', name: 'Portfolio' },
-  { id: 'ecommerce', name: 'E-commerce' },
-  { id: 'blog', name: 'Blog' },
-  { id: 'agency', name: 'Agency' },
-  { id: 'productivity', name: 'Productivity' },
-  { id: 'design', name: 'Design' },
-  { id: 'development', name: 'Development' }
-]
-
 export default function Browse() {
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [sortBy, setSortBy] = useState('newest')
   const [page, setPage] = useState(1)
+  const [categories, setCategories] = useState([{ id: 'all', name: 'All Sites' }])
+
+  useEffect(() => {
+    fetchCategories()
+  }, [])
+
+  const fetchCategories = async () => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
+      const response = await fetch(`${API_URL}/categories`)
+      const data = await response.json()
+      
+      // Prepend "All Sites" option to the categories from database
+      const allCategories = [
+        { id: 'all', name: 'All Sites' },
+        ...(data.categories || []).map(cat => ({ id: cat.slug, name: cat.name }))
+      ]
+      setCategories(allCategories)
+    } catch (error) {
+      console.error('Failed to fetch categories:', error)
+      // Keep default "All Sites" if fetch fails
+    }
+  }
 
   const { data, isLoading, isError, error, refetch } = useSites({
     category: selectedCategory,
