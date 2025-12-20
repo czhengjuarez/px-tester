@@ -310,13 +310,7 @@ export default function Admin() {
       const data = await response.json()
       
       // Show success message
-      if (data.emailSent) {
-        alert(`Invite created and email sent to ${inviteEmail}!`)
-      } else if (inviteEmail) {
-        alert(`Invite created but email failed to send. You can copy the link manually.`)
-      } else {
-        alert('Invite link created! Copy it to share.')
-      }
+      alert('Invite link created! Copy the link below and send it to the invitee.')
       
       setInviteEmail('')
       fetchInvites()
@@ -826,19 +820,17 @@ export default function Admin() {
               <form onSubmit={handleCreateInvite} className="flex gap-4">
                 <input
                   type="email"
-                  placeholder="Enter email address"
+                  placeholder="Enter email address (optional)"
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                   className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-500"
                 />
                 <Button type="submit" variant="primary">
-                  {inviteEmail ? 'Send Invite Email' : 'Generate Link'}
+                  Create Invite Link
                 </Button>
               </form>
               <Text color="secondary" size="sm" className="mt-2">
-                {inviteEmail 
-                  ? '✉️ An invitation email will be sent to this address with the invite link'
-                  : 'Enter an email to send an invitation, or leave blank to generate a shareable link'}
+                Enter an email to create a shareable invite link. Copy the link and send it to the invitee. Once they log in, you can adjust their access level.
               </Text>
             </Surface>
 
