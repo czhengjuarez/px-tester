@@ -9,6 +9,69 @@ import { createSession, deleteSession, setSessionCookie, clearSessionCookie } fr
 import { generateSiteEmbedding, searchSimilar, findSimilarSites } from './ai.js';
 import { captureScreenshot, getScreenshot } from './screenshots.js';
 
+// Invite routes
+export async function handleGetInvite(env, inviteCode, corsHeaders) {
+  const invite = await env.DB.prepare(`
+    SELECT id, code, email, invited_by_name, status, expires_at
+    FROM invites
+    WHERE code = ? AND status = 'pending' AND expires_at > ?
+  `).bind(inviteCode, Date.now()).first();
+
+  if (!invite) {
+    return new Response(JSON.stringify({ error: 'Invite not found or expired' }), {
+      status: 404,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  return new Response(JSON.stringify({ invite }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+  });
+}
+
+export async function handleAcceptInvite(request, env, inviteCode, corsHeaders) {
+  const user = await authenticate(request, env);
+  
+  if (!user) {
+    return new Response(JSON.stringify({ error: 'Authentication required' }), {
+      status: 401,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  const invite = await env.DB.prepare(`
+    SELECT id, code, email, status, expires_at
+    FROM invites
+    WHERE code = ? AND status = 'pending' AND expires_at > ?
+  `).bind(inviteCode, Date.now()).first();
+
+  if (!invite) {
+    return new Response(JSON.stringify({ error: 'Invite not found or expired' }), {
+      status: 404,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  // Check if invite email matches user email (if email was specified)
+  if (invite.email && invite.email !== user.email) {
+    return new Response(JSON.stringify({ error: 'This invite is for a different email address' }), {
+      status: 403,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  // Mark invite as accepted
+  await env.DB.prepare(`
+    UPDATE invites 
+    SET status = 'accepted', used_by = ?, used_by_email = ?, used_by_name = ?, used_at = ?
+    WHERE id = ?
+  `).bind(user.id, user.email, user.name, Date.now(), invite.id).run();
+
+  return new Response(JSON.stringify({ success: true }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+  });
+}
+
 // Auth routes
 export async function handleAuthGoogle(request, env, corsHeaders) {
   // Get the origin domain from the Referer header to redirect back after OAuth

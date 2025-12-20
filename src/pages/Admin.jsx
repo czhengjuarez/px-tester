@@ -4,11 +4,8 @@ import { Check } from '@phosphor-icons/react/dist/csr/Check'
 import { X } from '@phosphor-icons/react/dist/csr/X'
 import { Eye } from '@phosphor-icons/react/dist/csr/Eye'
 import { MagnifyingGlass } from '@phosphor-icons/react/dist/csr/MagnifyingGlass'
-import { Copy } from '@phosphor-icons/react/dist/csr/Copy'
-import { Trash } from '@phosphor-icons/react/dist/csr/Trash'
 import { useAuth } from '../contexts/AuthContext'
 import { LoadingSpinner, ErrorMessage } from '../components/common/LoadingStates'
-import api from '../services/api'
 
 export default function Admin() {
   const { user } = useAuth()
@@ -16,15 +13,12 @@ export default function Admin() {
   const [pendingSites, setPendingSites] = useState([])
   const [allSites, setAllSites] = useState([])
   const [users, setUsers] = useState([])
-  const [invites, setInvites] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
   const [siteSearchQuery, setSiteSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
-  const [inviteEmail, setInviteEmail] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [processingId, setProcessingId] = useState(null)
-  const [copiedCode, setCopiedCode] = useState(null)
 
   useEffect(() => {
     if (activeTab === 'sites') {
@@ -43,8 +37,6 @@ export default function Admin() {
       }, 500)
       
       return () => clearTimeout(timeoutId)
-    } else if (activeTab === 'invites') {
-      fetchInvites()
     }
   }, [activeTab, searchQuery, siteSearchQuery, statusFilter])
 
@@ -270,109 +262,6 @@ export default function Admin() {
     }
   }
 
-  const fetchInvites = async () => {
-    try {
-      setLoading(true)
-      const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
-      const response = await fetch(`${API_URL}/admin/invites`, {
-        credentials: 'include'
-      })
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch invites')
-      }
-      
-      const data = await response.json()
-      setInvites(data.invites || [])
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleCreateInvite = async (e) => {
-    e.preventDefault()
-    try {
-      setLoading(true)
-      const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
-      const response = await fetch(`${API_URL}/admin/invites`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ email: inviteEmail || null })
-      })
-      
-      if (!response.ok) {
-        throw new Error('Failed to create invite')
-      }
-      
-      const data = await response.json()
-      
-      // Show success message
-      alert('Invite link created! Copy the link below and send it to the invitee.')
-      
-      setInviteEmail('')
-      fetchInvites()
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleRevokeInvite = async (inviteId) => {
-    try {
-      setProcessingId(inviteId)
-      const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
-      const response = await fetch(`${API_URL}/admin/invites/${inviteId}/revoke`, {
-        method: 'POST',
-        credentials: 'include'
-      })
-      
-      if (!response.ok) {
-        throw new Error('Failed to revoke invite')
-      }
-      
-      fetchInvites()
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setProcessingId(null)
-    }
-  }
-
-  const handleDeleteInvite = async (inviteId) => {
-    if (!confirm('Are you sure you want to delete this invite? This action cannot be undone.')) {
-      return
-    }
-    
-    try {
-      setProcessingId(inviteId)
-      const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
-      const response = await fetch(`${API_URL}/admin/invites/${inviteId}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      })
-      
-      if (!response.ok) {
-        throw new Error('Failed to delete invite')
-      }
-      
-      fetchInvites()
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setProcessingId(null)
-    }
-  }
-
-  const copyInviteLink = (code) => {
-    const inviteUrl = `${window.location.origin}/invite/${code}`
-    navigator.clipboard.writeText(inviteUrl)
-    setCopiedCode(code)
-    setTimeout(() => setCopiedCode(null), 2000)
-  }
 
   if (loading) {
     return (
@@ -437,18 +326,6 @@ export default function Admin() {
           >
             Users
           </button>
-          {user.role === 'super_admin' && (
-            <button
-              onClick={() => setActiveTab('invites')}
-              className={`px-4 py-2 font-medium transition-colors border-b-2 ${
-                activeTab === 'invites'
-                  ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-                  : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-              }`}
-            >
-              Invites
-            </button>
-          )}
         </div>
 
         {/* Stats */}
@@ -811,124 +688,6 @@ export default function Admin() {
           </>
         )}
 
-        {/* Invites Tab */}
-        {activeTab === 'invites' && user.role === 'super_admin' && (
-          <>
-            {/* Create Invite Form */}
-            <Surface className="p-6 mb-6">
-              <Text size="lg" weight="semibold" className="mb-4">Create New Invite</Text>
-              <form onSubmit={handleCreateInvite} className="flex gap-4">
-                <input
-                  type="email"
-                  placeholder="Enter email address (optional)"
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-500"
-                />
-                <Button type="submit" variant="primary">
-                  Create Invite Link
-                </Button>
-              </form>
-              <Text color="secondary" size="sm" className="mt-2">
-                Enter an email to create a shareable invite link. Copy the link and send it to the invitee. Once they log in, you can adjust their access level.
-              </Text>
-            </Surface>
-
-            {/* Invites List */}
-            {invites.length === 0 ? (
-              <Surface className="p-12 text-center">
-                <Text color="secondary" size="lg">
-                  No invites created yet
-                </Text>
-              </Surface>
-            ) : (
-              <div className="space-y-4">
-                {invites.map((invite) => (
-                  <Surface key={invite.id} className="p-6">
-                    <div className="flex items-start justify-between gap-6">
-                      {/* Invite Info */}
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Text weight="semibold" className="font-mono">{invite.code}</Text>
-                          <Badge 
-                            variant={
-                              invite.status === 'accepted' ? 'success' : 
-                              invite.status === 'revoked' ? 'danger' : 
-                              invite.expires_at < Date.now() ? 'warning' : 'info'
-                            }
-                            size="sm"
-                          >
-                            {invite.status === 'accepted' ? 'Used' : 
-                             invite.status === 'revoked' ? 'Revoked' : 
-                             invite.expires_at < Date.now() ? 'Expired' : 'Active'}
-                          </Badge>
-                        </div>
-                        
-                        {invite.email && (
-                          <Text color="secondary" size="sm" className="mb-1">
-                            For: {invite.email}
-                          </Text>
-                        )}
-                        
-                        <Text color="secondary" size="sm" className="mb-1">
-                          Created by: {invite.invited_by_name}
-                        </Text>
-                        
-                        <Text color="secondary" size="sm" className="mb-1">
-                          Created: {new Date(invite.created_at).toLocaleDateString()}
-                        </Text>
-                        
-                        <Text color="secondary" size="sm">
-                          Expires: {new Date(invite.expires_at).toLocaleDateString()}
-                        </Text>
-
-                        {invite.used_by && (
-                          <Text color="secondary" size="sm" className="mt-2">
-                            Used by: {invite.used_by_name} ({invite.used_by_email})
-                          </Text>
-                        )}
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex gap-2">
-                        {invite.status === 'pending' && invite.expires_at > Date.now() && (
-                          <>
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              onClick={() => copyInviteLink(invite.code)}
-                              disabled={processingId === invite.id}
-                            >
-                              <Copy size={16} weight="bold" />
-                              {copiedCode === invite.code ? 'Copied!' : 'Copy Link'}
-                            </Button>
-                            <Button
-                              variant="danger"
-                              size="sm"
-                              onClick={() => handleRevokeInvite(invite.id)}
-                              disabled={processingId === invite.id}
-                            >
-                              Revoke
-                            </Button>
-                          </>
-                        )}
-                        <Button
-                          variant="danger"
-                          size="sm"
-                          onClick={() => handleDeleteInvite(invite.id)}
-                          disabled={processingId === invite.id}
-                        >
-                          <Trash size={16} weight="bold" />
-                          Delete
-                        </Button>
-                      </div>
-                    </div>
-                  </Surface>
-                ))}
-              </div>
-            )}
-          </>
-        )}
       </div>
     </div>
   )

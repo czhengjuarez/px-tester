@@ -10,7 +10,9 @@ import {
   handleGetMySites,
   handleUpdateSite,
   handleDeleteSite,
-  handleLikeSite
+  handleLikeSite,
+  handleGetInvite,
+  handleAcceptInvite
 } from './routes.js';
 import {
   handleGetPendingSites,
@@ -111,6 +113,17 @@ export default {
       if (url.pathname.match(/^\/api\/sites\/[^/]+\/like$/) && request.method === 'POST') {
         const id = url.pathname.split('/')[3];
         return handleLikeSite(env, user, id, corsHeaders);
+      }
+
+      // Invite routes
+      if (url.pathname.match(/^\/api\/invites\/[^/]+$/) && request.method === 'GET') {
+        const code = url.pathname.split('/')[3];
+        return handleGetInvite(env, code, corsHeaders);
+      }
+
+      if (url.pathname.match(/^\/api\/invites\/[^/]+\/accept$/) && request.method === 'POST') {
+        const code = url.pathname.split('/')[3];
+        return handleAcceptInvite(request, env, code, corsHeaders);
       }
 
       // Admin routes
