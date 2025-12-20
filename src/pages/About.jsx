@@ -5,7 +5,7 @@ export default function About() {
     <div className="min-h-screen">
       <div className="container mx-auto px-4 py-16 max-w-4xl">
         <div className="mb-12">
-          <Text as="h1" size="5xl" weight="bold" className="mb-6">
+          <Text as="h1" size="6xl" weight="bold" className="mb-6 text-5xl md:text-6xl lg:text-7xl">
             Execution is No Longer the Bottleneck.
           </Text>
         </div>

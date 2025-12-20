@@ -30,7 +30,7 @@ export default function Footer() {
                 <img 
                   src="https://www.figma.com/api/mcp/asset/67ab7c1c-95ce-4c54-abdd-ceaae8cca5cd" 
                   alt="Cloudflare" 
-                  className="h-5 w-auto"
+                  className="h-5 w-auto object-contain"
                 />
               </a>
             </div>
