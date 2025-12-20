@@ -1,23 +1,19 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Text, Button, Badge, Surface } from '@cloudflare/kumo';
-import { ArrowSquareOut } from '@phosphor-icons/react/dist/csr/ArrowSquareOut';
 import { ArrowLeft } from '@phosphor-icons/react/dist/csr/ArrowLeft';
 import { ArrowUpRight } from '@phosphor-icons/react/dist/csr/ArrowUpRight';
 import { Calendar } from '@phosphor-icons/react/dist/csr/Calendar';
 import { Heart } from '@phosphor-icons/react/dist/csr/Heart';
 import { Eye } from '@phosphor-icons/react/dist/csr/Eye';
 import { ShareNetwork } from '@phosphor-icons/react/dist/csr/ShareNetwork';
-import { Pencil } from '@phosphor-icons/react/dist/csr/Pencil';
 import { LoadingSpinner, ErrorMessage } from '../components/common/LoadingStates';
 import SiteCard from '../components/site/SiteCard';
 import { useSite } from '../hooks/useSites';
-import { useAuth } from '../contexts/AuthContext';
 
 export default function SiteDetail() {
   const { id } = useParams()
-  const { user } = useAuth()
-  const { data, isLoading, isError, error, refetch } = useSite(id)
+  const { data, isLoading, isError, refetch } = useSite(id)
   const [liked, setLiked] = useState(false)
   const [likeCount, setLikeCount] = useState(0)
   const [isLiking, setIsLiking] = useState(false)
@@ -167,22 +163,12 @@ export default function SiteDetail() {
                     <Text size="lg">{site.url}</Text>
                   </a>
                 </div>
-                <div className="flex gap-2">
-                  {user && (user.role === 'super_admin' || user.role === 'admin' || site.user_id === user.id) && (
-                    <Link to={`/submit?edit=${site.id}`}>
-                      <Button variant="outlined" size="lg">
-                        <Pencil size={20} />
-                        Edit
-                      </Button>
-                    </Link>
-                  )}
-                  <a href={site.url} target="_blank" rel="noopener noreferrer">
-                    <Button variant="primary" size="lg">
-                      <ArrowUpRight size={20} weight="bold" />
-                      Visit Site
-                    </Button>
-                  </a>
-                </div>
+                <a href={site.url} target="_blank" rel="noopener noreferrer">
+                  <Button variant="primary" size="lg">
+                    <ArrowUpRight size={20} weight="bold" />
+                    Visit Site
+                  </Button>
+                </a>
               </div>
 
               {/* Tags */}
@@ -273,9 +259,18 @@ export default function SiteDetail() {
 
               <div className="border-t border-gray-200 dark:border-gray-700 my-6" />
 
-              <div>
+              <div className="mb-6">
                 <Text weight="semibold" className="mb-2">Category</Text>
                 <Badge variant="info">{site.category}</Badge>
+              </div>
+
+              <div className="border-t border-gray-200 dark:border-gray-700 my-6" />
+
+              <div>
+                <Text weight="semibold" className="mb-3">About</Text>
+                <Text size="sm" color="secondary" className="leading-relaxed">
+                  {site.description}
+                </Text>
               </div>
             </Surface>
           </div>
