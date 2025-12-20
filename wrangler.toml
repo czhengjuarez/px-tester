@@ -9,6 +9,7 @@ workers_dev = true
 binding = "DB"
 database_name = "px-tester-db"
 database_id = "04077aab-abb7-4663-8049-6a2ba62f95d5"
+migrations_dir = "worker/migrations"
 
 # Vectorize binding for AI embeddings
 [[vectorize]]

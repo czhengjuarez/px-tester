@@ -629,20 +629,26 @@ export async function handleRejectSite(env, user, siteId, corsHeaders) {
 }
 
 export async function handleGetCategories(env, corsHeaders) {
-  const categories = [
-    { id: 'saas', name: 'SaaS', count: 0 },
-    { id: 'portfolio', name: 'Portfolio', count: 0 },
-    { id: 'ecommerce', name: 'E-commerce', count: 0 },
-    { id: 'blog', name: 'Blog', count: 0 },
-    { id: 'agency', name: 'Agency', count: 0 },
-    { id: 'productivity', name: 'Productivity', count: 0 },
-    { id: 'design', name: 'Design', count: 0 },
-    { id: 'development', name: 'Development', count: 0 }
-  ];
+  try {
+    const { results: categories } = await env.DB.prepare(`
+      SELECT id, name, slug, description
+      FROM categories
+      ORDER BY name ASC
+    `).all();
 
-  return new Response(JSON.stringify({ categories }), {
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-  });
+    return new Response(JSON.stringify({ categories }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  } catch (error) {
+    console.error('[GetCategories] Error:', error);
+    return new Response(JSON.stringify({ 
+      error: 'Failed to fetch categories',
+      details: error.message 
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
 }
 
 // AI Search endpoint
