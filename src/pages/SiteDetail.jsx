@@ -163,12 +163,6 @@ export default function SiteDetail() {
                     <Text size="lg">{site.url}</Text>
                   </a>
                 </div>
-                <a href={site.url} target="_blank" rel="noopener noreferrer">
-                  <Button variant="primary" size="lg">
-                    <ArrowUpRight size={20} weight="bold" />
-                    Visit Site
-                  </Button>
-                </a>
               </div>
 
               {/* Tags */}
@@ -255,6 +249,12 @@ export default function SiteDetail() {
                   <ShareNetwork size={20} />
                   Share
                 </Button>
+                <a href={site.url} target="_blank" rel="noopener noreferrer" className="flex-1">
+                  <Button variant="primary" className="w-full justify-center">
+                    <ArrowUpRight size={20} weight="bold" />
+                    Visit
+                  </Button>
+                </a>
               </div>
 
               <div className="border-t border-gray-200 dark:border-gray-700 my-6" />
