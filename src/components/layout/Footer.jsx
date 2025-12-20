@@ -19,22 +19,6 @@ export default function Footer() {
               Discover and submit the best websites and web applications. 
               Powered by AI for intelligent search and discovery.
             </Text>
-            <div className="mt-6">
-              <a 
-                href="https://blog.cloudflare.com" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                aria-label="Visit Cloudflare Blog"
-                className="inline-block opacity-60 hover:opacity-100 transition-opacity"
-              >
-                <img 
-                  src="https://www.figma.com/api/mcp/asset/67ab7c1c-95ce-4c54-abdd-ceaae8cca5cd" 
-                  alt="Cloudflare" 
-                  style={{ width: 'auto', height: '24px', maxWidth: '150px' }}
-                  className="object-contain"
-                />
-              </a>
-            </div>
           </div>
 
           {/* Links */}
