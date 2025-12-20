@@ -328,28 +328,63 @@ export async function handleCreateSite(request, env, user, corsHeaders, ctx) {
 }
 
 export async function handleLikeSite(env, user, siteId, corsHeaders) {
-  try {
-    // Get current likes count
-    const { results } = await env.DB.prepare(
-      'SELECT likes FROM sites WHERE id = ?'
-    ).bind(siteId).all();
+  if (!user) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
 
-    if (results.length === 0) {
+  try {
+    // Check if user has already liked this site
+    const existingLike = await env.DB.prepare(
+      'SELECT id FROM user_likes WHERE user_id = ? AND site_id = ?'
+    ).bind(user.id, siteId).first();
+
+    let newLikes;
+    let liked;
+
+    if (existingLike) {
+      // Unlike: Remove the like
+      await env.DB.prepare(
+        'DELETE FROM user_likes WHERE user_id = ? AND site_id = ?'
+      ).bind(user.id, siteId).run();
+
+      // Decrement likes count
+      await env.DB.prepare(
+        'UPDATE sites SET likes = likes - 1 WHERE id = ?'
+      ).bind(siteId).run();
+
+      liked = false;
+    } else {
+      // Like: Add the like
+      await env.DB.prepare(
+        'INSERT INTO user_likes (user_id, site_id) VALUES (?, ?)'
+      ).bind(user.id, siteId).run();
+
+      // Increment likes count
+      await env.DB.prepare(
+        'UPDATE sites SET likes = likes + 1 WHERE id = ?'
+      ).bind(siteId).run();
+
+      liked = true;
+    }
+
+    // Get updated likes count
+    const site = await env.DB.prepare(
+      'SELECT likes FROM sites WHERE id = ?'
+    ).bind(siteId).first();
+
+    if (!site) {
       return new Response(JSON.stringify({ error: 'Site not found' }), {
         status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    const currentLikes = results[0].likes || 0;
-    const newLikes = currentLikes + 1;
+    newLikes = site.likes || 0;
 
-    // Update likes count
-    await env.DB.prepare(
-      'UPDATE sites SET likes = ? WHERE id = ?'
-    ).bind(newLikes, siteId).run();
-
-    return new Response(JSON.stringify({ likes: newLikes }), {
+    return new Response(JSON.stringify({ likes: newLikes, liked }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   } catch (error) {
@@ -541,7 +576,7 @@ export async function handleGetSites(request, env, corsHeaders) {
   });
 }
 
-export async function handleGetSiteById(id, env, corsHeaders) {
+export async function handleGetSiteById(id, env, user, corsHeaders) {
   const site = await env.DB.prepare(
     'SELECT * FROM sites WHERE id = ? AND status = ?'
   ).bind(id, 'approved').first();
@@ -559,6 +594,15 @@ export async function handleGetSiteById(id, env, corsHeaders) {
 
   site.tags = site.tags ? JSON.parse(site.tags) : [];
 
+  // Check if current user has liked this site
+  let liked = false;
+  if (user) {
+    const userLike = await env.DB.prepare(
+      'SELECT id FROM user_likes WHERE user_id = ? AND site_id = ?'
+    ).bind(user.id, id).first();
+    liked = !!userLike;
+  }
+
   const { results: similarSites } = await env.DB.prepare(
     'SELECT * FROM sites WHERE category = ? AND id != ? AND status = ? ORDER BY RANDOM() LIMIT 3'
   ).bind(site.category, id, 'approved').all();
@@ -569,7 +613,7 @@ export async function handleGetSiteById(id, env, corsHeaders) {
   }));
 
   return new Response(JSON.stringify({
-    site,
+    site: { ...site, liked },
     similarSites: similar
   }), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' }

@@ -95,7 +95,7 @@ export default {
       
       if (url.pathname.match(/^\/api\/sites\/[^/]+$/) && request.method === 'GET') {
         const id = url.pathname.split('/').pop();
-        return handleGetSiteById(id, env, corsHeaders);
+        return handleGetSiteById(id, env, user, corsHeaders);
       }
 
       if (url.pathname.match(/^\/api\/sites\/[^/]+$/) && request.method === 'PUT') {

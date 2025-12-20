@@ -50,9 +50,12 @@ export default function SiteDetail() {
   const site = data.site
   const similarSites = data.similarSites || []
   
-  // Initialize like count from site data
+  // Initialize like count and liked state from site data
   if (likeCount === 0 && site?.likes) {
     setLikeCount(site.likes)
+  }
+  if (site?.liked !== undefined && liked !== site.liked) {
+    setLiked(site.liked)
   }
   
   const handleLike = async () => {
@@ -75,10 +78,9 @@ export default function SiteDetail() {
       
       if (response.ok) {
         const data = await response.json()
-        // Update with actual count from server
+        // Update with actual count and liked state from server
         setLikeCount(data.likes)
-        // Refetch site data to ensure consistency
-        refetch()
+        setLiked(data.liked)
       } else {
         // Revert on error
         setLiked(!newLikedState)
