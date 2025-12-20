@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Text, Button, Badge, Surface } from '@cloudflare/kumo';
 import { ArrowLeft } from '@phosphor-icons/react/dist/csr/ArrowLeft';
@@ -17,6 +17,16 @@ export default function SiteDetail() {
   const [liked, setLiked] = useState(false)
   const [likeCount, setLikeCount] = useState(0)
   const [isLiking, setIsLiking] = useState(false)
+  const initialized = useRef(false)
+
+  // Initialize like count and liked state from site data only once
+  useEffect(() => {
+    if (data?.site && !initialized.current) {
+      setLikeCount(data.site.likes || 0)
+      setLiked(data.site.liked || false)
+      initialized.current = true
+    }
+  }, [data])
 
   if (isLoading) {
     return (
@@ -49,14 +59,6 @@ export default function SiteDetail() {
 
   const site = data.site
   const similarSites = data.similarSites || []
-  
-  // Initialize like count and liked state from site data
-  if (likeCount === 0 && site?.likes) {
-    setLikeCount(site.likes)
-  }
-  if (site?.liked !== undefined && liked !== site.liked) {
-    setLiked(site.liked)
-  }
   
   const handleLike = async () => {
     if (isLiking) return
