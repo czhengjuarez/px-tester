@@ -254,7 +254,8 @@ export async function handleCreateInvite(env, user, email, corsHeaders) {
     try {
       const { sendInviteEmail } = await import('./email.js');
       console.log('[Invite] Calling sendInviteEmail function...');
-      await sendInviteEmail(email, inviteCode, user.name, env);
+      console.log('[Invite] Using sender email:', user.email);
+      await sendInviteEmail(email, inviteCode, user.name, user.email, env);
       emailSent = true;
       console.log('[Invite] Email sent successfully, emailSent flag set to true');
     } catch (error) {

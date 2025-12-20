@@ -1,6 +1,7 @@
-export async function sendInviteEmail(email, inviteCode, inviterName, env) {
+export async function sendInviteEmail(email, inviteCode, inviterName, inviterEmail, env) {
   console.log('[Email] Sending invite to:', email);
   console.log('[Email] Invite code:', inviteCode);
+  console.log('[Email] Sender email:', inviterEmail);
   console.log('[Email] Frontend URL:', env.FRONTEND_URL);
   
   const inviteUrl = `${env.FRONTEND_URL}/invite/${inviteCode}`;
@@ -12,8 +13,8 @@ export async function sendInviteEmail(email, inviteCode, inviterName, env) {
       }
     ],
     from: {
-      email: 'noreply@pxtester.com',
-      name: 'PX Tester'
+      email: inviterEmail,
+      name: inviterName
     },
     subject: `${inviterName} invited you to join PX Tester`,
     content: [
