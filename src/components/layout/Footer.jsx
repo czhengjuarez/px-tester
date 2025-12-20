@@ -25,12 +25,12 @@ export default function Footer() {
                 target="_blank" 
                 rel="noopener noreferrer" 
                 aria-label="Visit Cloudflare Blog"
-                className="inline-block opacity-60 hover:opacity-100 transition-opacity"
+                className="inline-block opacity-60 hover:opacity-100 transition-opacity max-w-[120px]"
               >
                 <img 
                   src="https://www.figma.com/api/mcp/asset/67ab7c1c-95ce-4c54-abdd-ceaae8cca5cd" 
                   alt="Cloudflare" 
-                  className="h-5 w-auto object-contain"
+                  className="w-full h-auto object-contain"
                 />
               </a>
             </div>
