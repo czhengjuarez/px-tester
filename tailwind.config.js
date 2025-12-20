@@ -1,4 +1,12 @@
-// Tailwind CSS v4 uses CSS-based configuration
-// Content paths are defined in CSS via @source directives
-// or automatically detected by the Vite plugin
-export default {}
+/** @type {import('tailwindcss').Config} */
+export default {
+  darkMode: 'class',
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
