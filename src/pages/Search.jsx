@@ -13,14 +13,6 @@ export default function Search() {
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(false)
 
-  useEffect(() => {
-    const q = searchParams.get('q')
-    if (q && q !== query) {
-      setQuery(q)
-      performSearch(q)
-    }
-  }, [searchParams])
-
   const performSearch = async (searchQuery) => {
     if (!searchQuery || searchQuery.trim().length === 0) {
       setResults([])
@@ -44,6 +36,14 @@ export default function Search() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    const q = searchParams.get('q')
+    if (q) {
+      setQuery(q)
+      performSearch(q)
+    }
+  }, [searchParams])
 
   const handleSearch = (e) => {
     e.preventDefault()
