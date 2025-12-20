@@ -54,7 +54,13 @@ export default function SubmitSite() {
         if (items[i].type.indexOf('image') !== -1) {
           const file = items[i].getAsFile();
           if (file) {
-            handleImageChange(file);
+            // Set image directly instead of calling handleImageChange
+            setImageFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              setImagePreview(reader.result);
+            };
+            reader.readAsDataURL(file);
             e.preventDefault();
           }
         }
