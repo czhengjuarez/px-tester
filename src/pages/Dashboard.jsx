@@ -131,54 +131,89 @@ export default function Dashboard() {
           )}
 
           {!loading && !error && sites.length > 0 && (
-            <div className="space-y-4">
-              {sites.map((site) => (
-                <Surface key={site.id} className="p-6">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <Text size="lg" weight="semibold">{site.name}</Text>
-                        <Badge variant={getStatusColor(site.status)}>
+            <Surface>
+              <table className="w-full">
+                <thead className="border-b border-gray-200 dark:border-gray-700">
+                  <tr>
+                    <th className="text-left p-4">
+                      <Text weight="semibold" size="sm">Site Name</Text>
+                    </th>
+                    <th className="text-left p-4">
+                      <Text weight="semibold" size="sm">URL</Text>
+                    </th>
+                    <th className="text-left p-4">
+                      <Text weight="semibold" size="sm">Status</Text>
+                    </th>
+                    <th className="text-left p-4">
+                      <Text weight="semibold" size="sm">Views</Text>
+                    </th>
+                    <th className="text-left p-4">
+                      <Text weight="semibold" size="sm">Likes</Text>
+                    </th>
+                    <th className="text-left p-4">
+                      <Text weight="semibold" size="sm">Actions</Text>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sites.map((site) => (
+                    <tr key={site.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                      <td className="p-4">
+                        <Text weight="semibold">{site.name}</Text>
+                      </td>
+                      <td className="p-4">
+                        <a 
+                          href={site.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-blue-600 dark:text-blue-400 hover:underline text-sm"
+                        >
+                          {site.url.length > 40 ? site.url.substring(0, 40) + '...' : site.url}
+                        </a>
+                      </td>
+                      <td className="p-4">
+                        <Badge 
+                          variant={getStatusColor(site.status)}
+                          size="sm"
+                        >
                           {site.status}
                         </Badge>
-                      </div>
-                      <Text color="secondary" size="sm" className="mb-2">
-                        {site.url}
-                      </Text>
-                      <Text color="secondary" className="mb-4">
-                        {site.short_description}
-                      </Text>
-                      <div className="flex items-center gap-6 text-gray-500">
+                      </td>
+                      <td className="p-4">
                         <div className="flex items-center gap-2">
-                          <Eye size={16} />
-                          <Text size="sm">{site.views || 0} views</Text>
+                          <Eye size={16} className="text-gray-400" />
+                          <Text size="sm">{site.views || 0}</Text>
                         </div>
+                      </td>
+                      <td className="p-4">
                         <div className="flex items-center gap-2">
-                          <Heart size={16} />
-                          <Text size="sm">{site.likes || 0} likes</Text>
+                          <Heart size={16} className="text-gray-400" />
+                          <Text size="sm">{site.likes || 0}</Text>
                         </div>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Link to={`/submit?edit=${site.id}`}>
-                        <Button variant="outlined" size="sm">
-                          <Pencil size={16} />
-                          Edit
-                        </Button>
-                      </Link>
-                      <Button 
-                        variant="outlined" 
-                        size="sm"
-                        onClick={() => handleDelete(site.id)}
-                      >
-                        <Trash size={16} />
-                        Delete
-                      </Button>
-                    </div>
-                  </div>
-                </Surface>
-              ))}
-            </div>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex gap-2">
+                          <Link to={`/submit?edit=${site.id}&from=dashboard`}>
+                            <Button variant="outlined" size="sm">
+                              <Pencil size={16} />
+                              Edit
+                            </Button>
+                          </Link>
+                          <Button 
+                            variant="outlined" 
+                            size="sm"
+                            onClick={() => handleDelete(site.id)}
+                          >
+                            <Trash size={16} />
+                            Delete
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </Surface>
           )}
         </div>
       </div>

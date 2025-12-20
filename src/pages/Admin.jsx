@@ -706,7 +706,7 @@ export default function Admin() {
                                 Reject
                               </Button>
                             )}
-                            <Link to={`/submit?edit=${site.id}`}>
+                            <Link to={`/submit?edit=${site.id}&from=admin`}>
                               <Button variant="outlined" size="sm">
                                 Edit
                               </Button>

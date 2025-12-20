@@ -10,6 +10,7 @@ export default function SubmitSite() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const editId = searchParams.get('edit');
+  const fromPage = searchParams.get('from');
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(!!editId);
   const [error, setError] = useState('');
@@ -218,9 +219,11 @@ export default function SubmitSite() {
         throw new Error(errorMsg);
       }
 
-      // Redirect super_admin to Admin manage sites page after editing, others to dashboard
-      if (editId && user?.role === 'super_admin') {
+      // Redirect based on where the edit was initiated from
+      if (fromPage === 'admin') {
         navigate('/admin?tab=manage');
+      } else if (fromPage === 'dashboard' || editId) {
+        navigate('/dashboard');
       } else {
         navigate('/dashboard');
       }
@@ -428,8 +431,8 @@ export default function SubmitSite() {
                 type="button"
                 variant="outlined"
                 onClick={() => {
-                  // Redirect super_admin to Admin manage sites page when canceling edit, others to dashboard
-                  if (editId && user?.role === 'super_admin') {
+                  // Redirect based on where the edit was initiated from
+                  if (fromPage === 'admin') {
                     navigate('/admin?tab=manage');
                   } else {
                     navigate('/dashboard');
