@@ -11,22 +11,22 @@ export default function Header() {
   const { isAuthenticated } = useAuth()
 
   return (
-    <header className="sticky top-0 z-50 bg-slate-900 border-b border-slate-800 shadow-sm">
+    <header className="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <span className="text-xl font-bold text-white">
+            <span className="text-xl font-bold text-gray-900 dark:text-white">
               PX LAB
             </span>
           </Link>
 
           {/* Navigation */}
           <nav className="flex items-center gap-6">
-            <Link to="/browse" className="text-gray-300 hover:text-white transition-colors">
+            <Link to="/browse" className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
               <span className="font-medium">Browse</span>
             </Link>
-            <Link to="/search" className="text-gray-300 hover:text-white transition-colors hidden sm:block">
+            <Link to="/search" className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors hidden sm:block">
               <span className="font-medium">Search</span>
             </Link>
           </nav>

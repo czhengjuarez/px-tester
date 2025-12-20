@@ -63,9 +63,9 @@ export default function Home() {
             {/* Search Bar */}
             <div className="max-w-2xl mx-auto mb-6">
               <Link to="/search">
-                <div className="flex items-center gap-3 bg-gray-800 rounded-xl p-4 hover:shadow-lg transition-shadow cursor-pointer border border-gray-700 shadow-sm">
-                  <MagnifyingGlass size={24} className="text-gray-400" />
-                  <span className="flex-1 text-left text-gray-400">
+                <div className="flex items-center gap-3 bg-white dark:bg-gray-800 rounded-xl p-4 hover:shadow-lg transition-shadow cursor-pointer border border-gray-300 dark:border-gray-700 shadow-sm">
+                  <MagnifyingGlass size={24} className="text-gray-400 dark:text-gray-400" />
+                  <span className="flex-1 text-left text-gray-500 dark:text-gray-400">
                     Search for websites, tools, inspiration...
                   </span>
                   <Badge variant="info" size="sm">AI</Badge>
@@ -133,7 +133,7 @@ export default function Home() {
       </section>
 
       {/* Recent Submissions */}
-      <section className="py-16 bg-gray-900">
+      <section className="py-16 bg-gray-50 dark:bg-gray-900">
         <div className="container mx-auto px-4">
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-3 mb-2">
