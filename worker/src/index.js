@@ -14,6 +14,7 @@ import {
   handleGetInvite,
   handleAcceptInvite
 } from './routes.js';
+import { handleSearch } from './search.js';
 import {
   handleGetPendingSites,
   handleApproveSite,
@@ -113,6 +114,11 @@ export default {
       if (url.pathname.match(/^\/api\/sites\/[^/]+\/like$/) && request.method === 'POST') {
         const id = url.pathname.split('/')[3];
         return handleLikeSite(env, user, id, corsHeaders);
+      }
+
+      // Search route
+      if (url.pathname === '/api/search' && request.method === 'GET') {
+        return handleSearch(request, env, corsHeaders);
       }
 
       // Invite routes

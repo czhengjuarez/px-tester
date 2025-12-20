@@ -278,26 +278,25 @@ export async function handleCreateSite(request, env, user, corsHeaders, ctx) {
       user.id, now, 'pending', 0, 0, 0, now, now
     ).run();
 
-    // Capture screenshot and generate embeddings asynchronously
-    // Don't wait for these to complete to avoid timeout
-    const site = { id, name, url, description, short_description, category, tags };
+    // Get the full site data for embedding
+    const siteData = {
+      id,
+      name,
+      url,
+      tagline: short_description || '',
+      description: description || '',
+      category_id: category,
+      tags: JSON.stringify(tags || []),
+      image_url: thumbnail_url || null
+    };
     
-    // Schedule async tasks with better error handling
-    // Use context.waitUntil to ensure they complete
+    // Generate and store embedding asynchronously
     const asyncTasks = async () => {
       try {
-        console.log('Starting AI embedding generation for:', site.name);
-        const embedding = await generateSiteEmbedding(env, site);
-        console.log('AI embedding generated:', embedding ? 'success' : 'failed');
-        
-        if (embedding) {
-          await env.DB.prepare(
-            'UPDATE sites SET embedding_id = ? WHERE id = ?'
-          ).bind(id, id).run();
-          console.log('AI embedding saved to database');
-        }
+        const { upsertSiteEmbedding } = await import('./embeddings.js');
+        await upsertSiteEmbedding(siteData, env);
       } catch (err) {
-        console.error('AI embedding failed:', err.message, err.stack);
+        console.error('[CreateSite] Embedding generation failed:', err);
       }
     };
 
@@ -305,8 +304,7 @@ export async function handleCreateSite(request, env, user, corsHeaders, ctx) {
     if (ctx && ctx.waitUntil) {
       ctx.waitUntil(asyncTasks());
     } else {
-      // Fallback if context not available
-      asyncTasks().catch(err => console.error('Async tasks error:', err));
+      asyncTasks().catch(err => console.error('[CreateSite] Async tasks error:', err));
     }
 
     return new Response(JSON.stringify({ 

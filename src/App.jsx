@@ -8,6 +8,7 @@ import SiteDetail from './pages/SiteDetail'
 import Dashboard from './pages/Dashboard'
 import SubmitSite from './pages/SubmitSite'
 import Admin from './pages/Admin'
+import Search from './pages/Search'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 
 function App() {
@@ -21,7 +22,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/browse" element={<Browse />} />
               <Route path="/site/:id" element={<SiteDetail />} />
-              <Route path="/search" element={<ComingSoon page="Search" />} />
+              <Route path="/search" element={<Search />} />
               <Route 
                 path="/submit" 
                 element={
