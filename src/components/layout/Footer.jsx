@@ -1,8 +1,5 @@
 import { Link } from 'react-router-dom'
 import { Text } from '@cloudflare/kumo'
-import { GithubLogo } from '@phosphor-icons/react/dist/csr/GithubLogo'
-import { TwitterLogo } from '@phosphor-icons/react/dist/csr/TwitterLogo'
-import { LinkedinLogo } from '@phosphor-icons/react/dist/csr/LinkedinLogo'
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
@@ -22,21 +19,19 @@ export default function Footer() {
               Discover and submit the best websites and web applications. 
               Powered by AI for intelligent search and discovery.
             </Text>
-            <div className="flex gap-4 mt-6">
-              <a href="https://github.com" target="_blank" rel="noopener noreferrer" 
-                 aria-label="Visit our GitHub page"
-                 className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
-                <GithubLogo size={24} weight="fill" aria-hidden="true" />
-              </a>
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer"
-                 aria-label="Follow us on Twitter"
-                 className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
-                <TwitterLogo size={24} weight="fill" aria-hidden="true" />
-              </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer"
-                 aria-label="Connect with us on LinkedIn"
-                 className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
-                <LinkedinLogo size={24} weight="fill" aria-hidden="true" />
+            <div className="mt-6">
+              <a 
+                href="https://blog.cloudflare.com" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                aria-label="Visit Cloudflare Blog"
+                className="inline-block opacity-60 hover:opacity-100 transition-opacity"
+              >
+                <img 
+                  src="https://www.figma.com/api/mcp/asset/67ab7c1c-95ce-4c54-abdd-ceaae8cca5cd" 
+                  alt="Cloudflare" 
+                  className="h-8 w-auto"
+                />
               </a>
             </div>
           </div>
