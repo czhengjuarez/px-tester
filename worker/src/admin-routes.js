@@ -316,3 +316,20 @@ export async function handleRevokeInvite(env, user, inviteId, corsHeaders) {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' }
   });
 }
+
+export async function handleDeleteInvite(env, user, inviteId, corsHeaders) {
+  if (!user || user.role !== 'super_admin') {
+    return new Response(JSON.stringify({ error: 'Only super admins can delete invites' }), {
+      status: 403,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  await env.DB.prepare(`
+    DELETE FROM invites WHERE id = ?
+  `).bind(inviteId).run();
+
+  return new Response(JSON.stringify({ success: true }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+  });
+}

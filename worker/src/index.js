@@ -22,6 +22,7 @@ import {
   handleCreateInvite,
   handleGetInvites,
   handleRevokeInvite,
+  handleDeleteInvite,
   handleGetAllSites,
   handleToggleFeatured,
   handleUpdateSiteStatus
@@ -157,6 +158,11 @@ export default {
       if (url.pathname.match(/^\/api\/admin\/invites\/[^/]+\/revoke$/) && request.method === 'POST') {
         const inviteId = url.pathname.split('/')[4];
         return handleRevokeInvite(env, user, inviteId, corsHeaders);
+      }
+
+      if (url.pathname.match(/^\/api\/admin\/invites\/[^/]+$/) && request.method === 'DELETE') {
+        const inviteId = url.pathname.split('/')[4];
+        return handleDeleteInvite(env, user, inviteId, corsHeaders);
       }
 
       // Manage Sites

@@ -5,6 +5,7 @@ import { X } from '@phosphor-icons/react/dist/csr/X'
 import { Eye } from '@phosphor-icons/react/dist/csr/Eye'
 import { MagnifyingGlass } from '@phosphor-icons/react/dist/csr/MagnifyingGlass'
 import { Copy } from '@phosphor-icons/react/dist/csr/Copy'
+import { Trash } from '@phosphor-icons/react/dist/csr/Trash'
 import { useAuth } from '../contexts/AuthContext'
 import { LoadingSpinner, ErrorMessage } from '../components/common/LoadingStates'
 import api from '../services/api'
@@ -337,6 +338,31 @@ export default function Admin() {
       
       if (!response.ok) {
         throw new Error('Failed to revoke invite')
+      }
+      
+      fetchInvites()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setProcessingId(null)
+    }
+  }
+
+  const handleDeleteInvite = async (inviteId) => {
+    if (!confirm('Are you sure you want to delete this invite? This action cannot be undone.')) {
+      return
+    }
+    
+    try {
+      setProcessingId(inviteId)
+      const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
+      const response = await fetch(`${API_URL}/admin/invites/${inviteId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete invite')
       }
       
       fetchInvites()
@@ -894,6 +920,15 @@ export default function Admin() {
                             </Button>
                           </>
                         )}
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          onClick={() => handleDeleteInvite(invite.id)}
+                          disabled={processingId === invite.id}
+                        >
+                          <Trash size={16} weight="bold" />
+                          Delete
+                        </Button>
                       </div>
                     </div>
                   </Surface>
