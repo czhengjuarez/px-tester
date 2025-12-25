@@ -62,3 +62,62 @@ export async function handleCreateCategory(request, env, user, corsHeaders) {
     });
   }
 }
+
+export async function handleDeleteCategory(request, env, user, categoryId, corsHeaders) {
+  if (!user || user.role !== 'super_admin') {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 403,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  try {
+    // Check if category exists
+    const category = await env.DB.prepare(
+      'SELECT id, name FROM categories WHERE id = ?'
+    ).bind(categoryId).first();
+
+    if (!category) {
+      return new Response(JSON.stringify({ error: 'Category not found' }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Check if any sites are using this category
+    const sitesUsingCategory = await env.DB.prepare(
+      'SELECT COUNT(*) as count FROM sites WHERE category = ?'
+    ).bind(category.name).first();
+
+    if (sitesUsingCategory && sitesUsingCategory.count > 0) {
+      return new Response(JSON.stringify({ 
+        error: 'Cannot delete category',
+        message: `This category is being used by ${sitesUsingCategory.count} site(s). Please reassign those sites first.`
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Delete the category
+    await env.DB.prepare('DELETE FROM categories WHERE id = ?').bind(categoryId).run();
+
+    console.log('[DeleteCategory] Deleted category:', category.name);
+
+    return new Response(JSON.stringify({
+      success: true,
+      message: 'Category deleted successfully'
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  } catch (error) {
+    console.error('[DeleteCategory] Error:', error);
+    return new Response(JSON.stringify({
+      error: 'Failed to delete category',
+      details: error.message
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+}

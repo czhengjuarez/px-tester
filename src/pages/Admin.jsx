@@ -367,6 +367,35 @@ export default function Admin() {
     }
   }
 
+  const handleDeleteCategory = async (categoryId, categoryName) => {
+    if (!confirm(`Are you sure you want to delete the category "${categoryName}"? This cannot be undone.`)) {
+      return
+    }
+
+    try {
+      setProcessingId(categoryId)
+      const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
+      const response = await fetch(`${API_URL}/categories/${categoryId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        await fetchCategories()
+        alert('Category deleted successfully!')
+      } else {
+        alert(data.message || data.error || 'Failed to delete category')
+      }
+    } catch (error) {
+      console.error('Delete category error:', error)
+      alert('Failed to delete category')
+    } finally {
+      setProcessingId(null)
+    }
+  }
+
 
   if (loading) {
     return (
@@ -889,8 +918,8 @@ export default function Admin() {
                       key={category.id}
                       className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
                     >
-                      <div className="flex items-start justify-between">
-                        <div>
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
                           <Text weight="semibold" className="mb-1">
                             {category.name}
                           </Text>
@@ -903,9 +932,19 @@ export default function Admin() {
                             Slug: {category.slug}
                           </Text>
                         </div>
-                        <Badge variant="secondary" size="sm">
-                          ID: {category.id}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary" size="sm">
+                            ID: {category.id}
+                          </Badge>
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={() => handleDeleteCategory(category.id, category.name)}
+                            disabled={processingId === category.id}
+                          >
+                            {processingId === category.id ? 'Deleting...' : 'Delete'}
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ))}

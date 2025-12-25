@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Text, Button, Surface } from '@cloudflare/kumo';
+import RichTextEditor from '../components/ui/RichTextEditor';
 import { UploadSimple } from '@phosphor-icons/react/dist/csr/UploadSimple';
 import { X } from '@phosphor-icons/react/dist/csr/X';
 import { useAuth } from '../contexts/AuthContext';
@@ -307,13 +308,10 @@ export default function SubmitSite() {
               <label className="block mb-2">
                 <Text weight="semibold">Full Description</Text>
               </label>
-              <textarea
-                name="description"
+              <RichTextEditor
                 value={formData.description}
-                onChange={handleChange}
-                rows={4}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Tell us more about your site..."
+                onChange={(value) => setFormData(prev => ({ ...prev, description: value }))}
+                placeholder="Tell us more about your site... (supports formatting)"
               />
             </div>
 

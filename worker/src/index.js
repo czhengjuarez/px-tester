@@ -15,7 +15,7 @@ import {
   handleAcceptInvite
 } from './routes.js';
 import { handleSearch } from './search.js';
-import { handleCreateCategory } from './category-routes.js';
+import { handleCreateCategory, handleDeleteCategory } from './category-routes.js';
 import {
   handleGetPendingSites,
   handleApproveSite,
@@ -114,6 +114,11 @@ export default {
 
       if (url.pathname === '/api/categories' && request.method === 'POST') {
         return handleCreateCategory(request, env, user, corsHeaders);
+      }
+
+      if (url.pathname.match(/^\/api\/categories\/[^/]+$/) && request.method === 'DELETE') {
+        const categoryId = url.pathname.split('/')[3];
+        return handleDeleteCategory(request, env, user, categoryId, corsHeaders);
       }
 
       if (url.pathname.match(/^\/api\/sites\/[^/]+\/like$/) && request.method === 'POST') {
