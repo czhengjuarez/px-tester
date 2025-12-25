@@ -4,8 +4,16 @@ A modern site showcase platform built with Cloudflare Workers, React, and Cloudf
 
 ## 🚀 Live Demo
 
-- **Frontend**: https://demo.px-tester.workers.dev
+### Production URLs
+- **Frontend (Workers.dev)**: https://demo.px-tester.workers.dev ✅ **Working**
+- **Frontend (Custom Domain)**: https://demo.pxtester.com ⚠️ **Auth Issue (see below)**
 - **API**: https://px-tester-api.px-tester.workers.dev
+
+### Deployment Architecture
+- **Single Backend API Worker** serves both frontend deployments
+- **Two Frontend URLs** pointing to the same worker:
+  - `demo.px-tester.workers.dev` - Workers.dev subdomain
+  - `demo.pxtester.com` - Custom domain with Cloudflare Access protection
 
 ## ✅ What's Working
 
@@ -53,6 +61,35 @@ A modern site showcase platform built with Cloudflare Workers, React, and Cloudf
 - ✅ Placeholder gradients for sites without screenshots
 
 ## ⚠️ What's Missing (Known Issues)
+
+### Custom Domain Authentication Issue
+**Status**: Cloudflare Browser Isolation blocking localStorage
+
+**Problem**: 
+- `demo.pxtester.com` is protected by Cloudflare Access with Browser Isolation enabled
+- Browser Isolation sandboxes the page in `edge.browser.run`, preventing localStorage access
+- Authentication uses localStorage to store session tokens for cross-domain API calls
+- Result: Users cannot authenticate on the custom domain
+
+**Why Workers.dev Works**:
+- `demo.px-tester.workers.dev` works perfectly because it's not behind Browser Isolation
+- Both frontend and API are on `*.workers.dev` domains, allowing proper authentication flow
+
+**Root Cause**: 
+Browser Isolation creates a security sandbox that blocks:
+- localStorage/sessionStorage access
+- Certain cookie operations
+- Some JavaScript APIs
+
+**Next Steps**:
+1. **Upgrade Cloudflare Zero Trust plan** to access Browser Isolation configuration
+2. **Add `demo.pxtester.com` to "Do Not Isolate" list** in Browser Isolation settings
+3. **Test authentication** after configuration change
+4. **Alternative**: Disable Browser Isolation for this application entirely
+
+**Temporary Workaround**: Use `https://demo.px-tester.workers.dev` for full functionality
+
+---
 
 ### Phase 5: AI Semantic Search
 **Status**: Backend implemented but not working
@@ -287,19 +324,29 @@ px-tester/
 
 ## 🎯 Next Steps
 
-1. **Resolve Cloudflare API Issues**:
-   - Contact support about Workers AI and Browser Rendering API access
+### Priority 1: Fix Custom Domain Authentication
+1. **Upgrade Cloudflare Zero Trust plan** to access Browser Isolation configuration
+2. **Configure Browser Isolation**:
+   - Navigate to: Zero Trust Dashboard → Browser Isolation → Settings
+   - Add `demo.pxtester.com` to "Do Not Isolate" list
+   - OR disable Browser Isolation for the `demo.pxtester.com` Access application
+3. **Test authentication flow** on custom domain after configuration
+4. **Verify localStorage access** works correctly
+
+### Priority 2: Resolve Cloudflare API Issues
+1. **Workers AI & Browser Rendering**:
+   - Contact support about API access
    - Verify account tier and API limits
 
 2. **Alternative Implementations**:
    - Integrate external screenshot service
    - Integrate external AI/embedding service
 
-3. **Phase 8 Features**:
-   - User roles (admin, super admin)
-   - User management interface
-   - Ban/unban functionality
-   - Admin activity logs
+### Priority 3: Phase 8 Features
+- User roles (admin, super admin)
+- User management interface
+- Ban/unban functionality
+- Admin activity logs
 
 ## 📝 Notes
 

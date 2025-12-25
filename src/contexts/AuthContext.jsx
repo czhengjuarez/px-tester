@@ -19,7 +19,7 @@ export function AuthProvider({ children }) {
       console.log('[Auth] Current location:', window.location.href);
       console.log('[Auth] Protocol:', window.location.protocol);
       
-      // Set cookie on frontend domain
+      // Set cookie on current domain (no Domain attribute = current domain only)
       const maxAge = Math.floor((parseInt(expires) - Date.now()) / 1000);
       const cookieString = `session=${authToken}; Path=/; Secure; SameSite=Lax; Max-Age=${maxAge}`;
       console.log('[Auth] Setting cookie:', cookieString.substring(0, 50) + '...');
@@ -45,14 +45,40 @@ export function AuthProvider({ children }) {
   const checkAuth = async () => {
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api';
+      const token = localStorage.getItem('session_token');
+      const expires = localStorage.getItem('session_expires');
+      
       console.log('[Auth] Checking auth at:', `${API_URL}/auth/me`);
+      console.log('[Auth] Token from localStorage:', token ? token.substring(0, 10) + '...' : 'null');
+      
+      // Check if token is expired
+      if (expires && parseInt(expires) < Date.now()) {
+        console.log('[Auth] Token expired, clearing');
+        localStorage.removeItem('session_token');
+        localStorage.removeItem('session_expires');
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+      
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/auth/me`, {
-        credentials: 'include'
+        credentials: 'include',
+        headers
       });
       console.log('[Auth] Check auth response status:', response.status);
       const data = await response.json();
       console.log('[Auth] Check auth data:', data);
+      console.log('[Auth] User from response:', data.user);
       setUser(data.user);
+      console.log('[Auth] User state should now be:', data.user ? 'logged in' : 'logged out');
     } catch (error) {
       console.error('[Auth] Auth check failed:', error);
       setUser(null);

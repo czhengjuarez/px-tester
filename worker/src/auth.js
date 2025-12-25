@@ -1,10 +1,22 @@
 // Authentication utilities and middleware
 
 export async function authenticate(request, env) {
-  const cookie = request.headers.get('Cookie');
-  if (!cookie) return null;
+  let sessionToken = null;
   
-  const sessionToken = cookie.match(/session=([^;]+)/)?.[1];
+  // Try Authorization header first (for cross-domain requests)
+  const authHeader = request.headers.get('Authorization');
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    sessionToken = authHeader.substring(7);
+  }
+  
+  // Fallback to cookie (for same-domain requests)
+  if (!sessionToken) {
+    const cookie = request.headers.get('Cookie');
+    if (cookie) {
+      sessionToken = cookie.match(/session=([^;]+)/)?.[1];
+    }
+  }
+  
   if (!sessionToken) return null;
   
   const session = await env.DB.prepare(`
