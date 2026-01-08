@@ -8,6 +8,25 @@ import { MagnifyingGlass } from '@phosphor-icons/react/dist/csr/MagnifyingGlass'
 import { useAuth } from '../contexts/AuthContext'
 import { LoadingSpinner, ErrorMessage } from '../components/common/LoadingStates'
 
+// Helper function to make authenticated API requests
+const authenticatedFetch = (url, options = {}) => {
+  const token = localStorage.getItem('session_token')
+  const headers = {
+    'Content-Type': 'application/json',
+    ...options.headers
+  }
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+  
+  return fetch(url, {
+    ...options,
+    credentials: 'include',
+    headers
+  })
+}
+
 export default function Admin() {
   const { user } = useAuth()
   const [searchParams] = useSearchParams()
@@ -55,9 +74,7 @@ export default function Admin() {
     try {
       setLoading(true)
       const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
-      const response = await fetch(`${API_URL}/admin/pending`, {
-        credentials: 'include'
-      })
+      const response = await authenticatedFetch(`${API_URL}/admin/pending`)
       
       if (!response.ok) {
         throw new Error('Failed to fetch pending sites')
@@ -76,9 +93,8 @@ export default function Admin() {
     try {
       setProcessingId(siteId)
       const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
-      const response = await fetch(`${API_URL}/admin/sites/${siteId}/approve`, {
-        method: 'POST',
-        credentials: 'include'
+      const response = await authenticatedFetch(`${API_URL}/admin/sites/${siteId}/approve`, {
+        method: 'POST'
       })
       
       if (!response.ok) {
@@ -98,9 +114,8 @@ export default function Admin() {
     try {
       setProcessingId(siteId)
       const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
-      const response = await fetch(`${API_URL}/admin/sites/${siteId}/reject`, {
-        method: 'POST',
-        credentials: 'include'
+      const response = await authenticatedFetch(`${API_URL}/admin/sites/${siteId}/reject`, {
+        method: 'POST'
       })
       
       if (!response.ok) {
@@ -125,9 +140,7 @@ export default function Admin() {
       if (statusFilter) params.append('status', statusFilter)
       
       const url = `${API_URL}/admin/sites${params.toString() ? '?' + params.toString() : ''}`
-      const response = await fetch(url, {
-        credentials: 'include'
-      })
+      const response = await authenticatedFetch(url)
       
       if (!response.ok) {
         throw new Error('Failed to fetch sites')
@@ -149,9 +162,8 @@ export default function Admin() {
       const url = `${API_URL}/admin/sites/${siteId}/toggle-featured`
       console.log('[Admin] Toggling featured for site:', siteId, 'URL:', url)
       
-      const response = await fetch(url, {
-        method: 'POST',
-        credentials: 'include'
+      const response = await authenticatedFetch(url, {
+        method: 'POST'
       })
       
       console.log('[Admin] Toggle response status:', response.status)
@@ -178,10 +190,8 @@ export default function Admin() {
     try {
       setProcessingId(siteId)
       const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
-      const response = await fetch(`${API_URL}/admin/sites/${siteId}/status`, {
+      const response = await authenticatedFetch(`${API_URL}/admin/sites/${siteId}/status`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ status })
       })
       
@@ -206,9 +216,7 @@ export default function Admin() {
         ? `${API_URL}/admin/users?search=${encodeURIComponent(searchQuery)}`
         : `${API_URL}/admin/users`
       
-      const response = await fetch(url, {
-        credentials: 'include'
-      })
+      const response = await authenticatedFetch(url)
       
       if (!response.ok) {
         throw new Error('Failed to fetch users')
@@ -227,10 +235,8 @@ export default function Admin() {
     try {
       setProcessingId(userId)
       const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
-      const response = await fetch(`${API_URL}/admin/users/${userId}/upgrade`, {
+      const response = await authenticatedFetch(`${API_URL}/admin/users/${userId}/upgrade`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ role: newRole })
       })
       
@@ -255,9 +261,8 @@ export default function Admin() {
     try {
       setProcessingId(userId)
       const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
-      const response = await fetch(`${API_URL}/admin/users/${userId}`, {
-        method: 'DELETE',
-        credentials: 'include'
+      const response = await authenticatedFetch(`${API_URL}/admin/users/${userId}`, {
+        method: 'DELETE'
       })
 
       if (response.ok) {
@@ -283,9 +288,8 @@ export default function Admin() {
       setBackfillLoading(true)
       setBackfillStatus(null)
       const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
-      const response = await fetch(`${API_URL}/admin/backfill-embeddings`, {
-        method: 'POST',
-        credentials: 'include'
+      const response = await authenticatedFetch(`${API_URL}/admin/backfill-embeddings`, {
+        method: 'POST'
       })
 
       const data = await response.json()
@@ -339,10 +343,8 @@ export default function Admin() {
     try {
       setCategoryLoading(true)
       const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
-      const response = await fetch(`${API_URL}/categories`, {
+      const response = await authenticatedFetch(`${API_URL}/categories`, {
         method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: newCategoryName.trim(),
           description: newCategoryDescription.trim() || null
@@ -375,9 +377,8 @@ export default function Admin() {
     try {
       setProcessingId(categoryId)
       const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api'
-      const response = await fetch(`${API_URL}/categories/${categoryId}`, {
-        method: 'DELETE',
-        credentials: 'include'
+      const response = await authenticatedFetch(`${API_URL}/categories/${categoryId}`, {
+        method: 'DELETE'
       })
 
       const data = await response.json()

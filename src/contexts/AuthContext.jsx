@@ -98,10 +98,26 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'https://px-tester-api.px-tester.workers.dev/api';
+      const token = localStorage.getItem('session_token');
+      
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       await fetch(`${API_URL}/auth/logout`, {
         method: 'POST',
-        credentials: 'include'
+        credentials: 'include',
+        headers
       });
+      
+      // Clear localStorage
+      localStorage.removeItem('session_token');
+      localStorage.removeItem('session_expires');
+      
       setUser(null);
       window.location.href = '/';
     } catch (error) {
