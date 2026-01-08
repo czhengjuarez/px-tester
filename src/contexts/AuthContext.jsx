@@ -15,20 +15,13 @@ export function AuthProvider({ children }) {
     console.log('[Auth] URL params:', { authToken: authToken ? authToken.substring(0, 10) + '...' : null, expires });
     
     if (authToken && expires) {
-      console.log('[Auth] Found auth token in URL, setting cookie');
+      console.log('[Auth] Found auth token in URL, storing in localStorage');
       console.log('[Auth] Current location:', window.location.href);
-      console.log('[Auth] Protocol:', window.location.protocol);
       
-      // Set cookie on current domain (no Domain attribute = current domain only)
-      const maxAge = Math.floor((parseInt(expires) - Date.now()) / 1000);
-      const cookieString = `session=${authToken}; Path=/; Secure; SameSite=Lax; Max-Age=${maxAge}`;
-      console.log('[Auth] Setting cookie:', cookieString.substring(0, 50) + '...');
-      console.log('[Auth] Max-Age:', maxAge, 'seconds');
-      
-      document.cookie = cookieString;
-      
-      // Verify cookie was set
-      console.log('[Auth] document.cookie after setting:', document.cookie);
+      // Store token in localStorage for cross-domain API access
+      localStorage.setItem('session_token', authToken);
+      localStorage.setItem('session_expires', expires);
+      console.log('[Auth] Token stored in localStorage');
       
       // Remove token from URL
       urlParams.delete('auth_token');
@@ -36,7 +29,7 @@ export function AuthProvider({ children }) {
       const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
       window.history.replaceState({}, '', newUrl);
       
-      console.log('[Auth] Cookie set, URL cleaned, checking auth');
+      console.log('[Auth] Token stored, URL cleaned, checking auth');
     }
     
     checkAuth();

@@ -154,16 +154,23 @@ export default function SiteDetail() {
             <div className="mb-6">
               <div className="flex items-start justify-between gap-4 mb-4">
                 <div className="flex-1">
-                  <Text as="h1" size="4xl" weight="bold" className="mb-2">
+                  <Text as="h1" size="4xl" weight="bold" className="mb-3">
                     {site.name}
                   </Text>
                   <a 
                     href={site.url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-blue-600 dark:text-blue-400 hover:underline"
+                    className="inline-block"
                   >
-                    <Text size="lg">{site.url}</Text>
+                    <Button 
+                      variant="primary" 
+                      size="sm"
+                      className="rounded-full px-4 py-1.5 flex items-center gap-1.5"
+                    >
+                      <ArrowUpRight size={16} weight="bold" />
+                      <span className="text-sm font-medium">Live Site</span>
+                    </Button>
                   </a>
                 </div>
               </div>

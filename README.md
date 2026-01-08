@@ -24,7 +24,7 @@ A modern site showcase platform built with Cloudflare Workers, React, and Cloudf
 - ✅ Beautiful UI using Cloudflare Kumo components
 - ✅ Home page with featured sites
 - ✅ Browse page with filtering by category
-- ✅ Site detail pages
+- ✅ Site detail pages with pill-style "Live Site" button
 - ✅ Search page (UI only, backend pending)
 
 #### 2. **Authentication**
